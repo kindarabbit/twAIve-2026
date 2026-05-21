@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>twAIve - AI 윤리 스토리 게임</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="play-surface" aria-label="AI 윤리 스토리 게임">
+        <header class="topbar">
+          <button class="icon-button" id="resetButton" type="button" aria-label="처음으로">
+            <span aria-hidden="true">↺</span>
+          </button>
+          <div class="brand-block">
+            <p>twAIve</p>
+            <h1>AI 윤리 스토리</h1>
+          </div>
+          <div class="score-pill" aria-live="polite">
+            <span id="scoreLabel">윤리 50</span>
+          </div>
+        </header>
+
+        <div class="episode-tabs" id="episodeTabs" aria-label="에피소드 선택"></div>
+
+        <section class="story-stage">
+          <div class="scene-art" aria-hidden="true">
+            <img src="assets/character-sheet.png" alt="" />
+            <div class="scene-shade"></div>
+          </div>
+
+          <aside class="cast-panel" aria-label="인물과 주제">
+            <p class="eyebrow" id="topicLabel">딥페이크 · 초상권</p>
+            <h2 id="episodeTitle">삭제되지 않은 얼굴</h2>
+            <p id="episodeSummary">학교 축제 홍보 SNS에서 시작된 AI 얼굴 합성 사건.</p>
+            <div class="meter-group" id="meterGroup"></div>
+          </aside>
+
+          <article class="dialogue-panel">
+            <div class="chapter-line" id="chapterLine">Chapter 1</div>
+            <h3 id="sceneTitle">이거 진짜 사람처럼 된다니까?</h3>
+            <p class="scene-text" id="sceneText"></p>
+            <blockquote id="quoteText"></blockquote>
+          </article>
+        </section>
+
+        <section class="choice-dock" aria-label="선택지">
+          <div class="feedback" id="feedbackBox" aria-live="polite"></div>
+          <div class="choices" id="choices"></div>
+        </section>
+
+        <nav class="bottom-nav" aria-label="학습 진행">
+          <button type="button" class="nav-item is-active" data-view="story">스토리</button>
+          <button type="button" class="nav-item" data-view="record">기록</button>
+          <button type="button" class="nav-item" data-view="learn">학습</button>
+        </nav>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
