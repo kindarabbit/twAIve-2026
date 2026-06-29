@@ -329,16 +329,24 @@ const state = {
   view: "story",
 };
 
-const AUTH_STORAGE_KEY = "twaive-login-user";
-const LOGIN_ACCOUNT = {
+const AUTH_STORAGE_KEY = "twaive-current-user";
+const USERS_STORAGE_KEY = "twaive-users";
+const DEFAULT_ACCOUNT = {
   username: "admin",
   password: "1234",
+  displayName: "admin",
 };
+let authMode = "login";
 
 const els = {
   loginScreen: document.getElementById("loginScreen"),
   loginForm: document.getElementById("loginForm"),
+  authModeCopy: document.getElementById("authModeCopy"),
+  showLoginButton: document.getElementById("showLoginButton"),
+  showSignupButton: document.getElementById("showSignupButton"),
+  authSubmitButton: document.getElementById("authSubmitButton"),
   usernameInput: document.getElementById("usernameInput"),
+  displayNameInput: document.getElementById("displayNameInput"),
   passwordInput: document.getElementById("passwordInput"),
   loginError: document.getElementById("loginError"),
   userLabel: document.getElementById("userLabel"),
@@ -358,17 +366,58 @@ const els = {
   resetButton: document.getElementById("resetButton"),
 };
 
+function getUsers() {
+  try {
+    return JSON.parse(localStorage.getItem(USERS_STORAGE_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+}
+
+function ensureDefaultAccount() {
+  const users = getUsers();
+  if (!users[DEFAULT_ACCOUNT.username]) {
+    users[DEFAULT_ACCOUNT.username] = {
+      password: DEFAULT_ACCOUNT.password,
+      displayName: DEFAULT_ACCOUNT.displayName,
+    };
+    saveUsers(users);
+  }
+}
+
 function isLoggedIn() {
   return Boolean(localStorage.getItem(AUTH_STORAGE_KEY));
 }
 
 function showApp() {
   const username = localStorage.getItem(AUTH_STORAGE_KEY);
+  const users = getUsers();
+  const user = users[username];
   document.body.classList.add("is-authenticated");
-  els.userLabel.textContent = username;
+  els.userLabel.textContent = user?.displayName || username;
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const isSignup = mode === "signup";
+
+  document.body.classList.toggle("is-signup", isSignup);
+  els.showLoginButton.classList.toggle("is-active", !isSignup);
+  els.showSignupButton.classList.toggle("is-active", isSignup);
+  els.displayNameInput.required = isSignup;
+  els.authSubmitButton.textContent = isSignup ? "회원가입" : "로그인";
+  els.authModeCopy.textContent = isSignup
+    ? "새 계정을 만들면 이 브라우저에 회원 정보가 저장됩니다."
+    : "로그인 후 에피소드별 선택 기록과 학습 진행을 확인하세요.";
+  els.loginError.textContent = "";
 }
 
 function showLogin(message = "") {
+  setAuthMode("login");
   document.body.classList.remove("is-authenticated");
   els.loginError.textContent = message;
   els.passwordInput.value = "";
@@ -376,7 +425,10 @@ function showLogin(message = "") {
 }
 
 function login(username, password) {
-  if (username === LOGIN_ACCOUNT.username && password === LOGIN_ACCOUNT.password) {
+  const users = getUsers();
+  const user = users[username];
+
+  if (user && user.password === password) {
     localStorage.setItem(AUTH_STORAGE_KEY, username);
     els.loginError.textContent = "";
     showApp();
@@ -385,6 +437,34 @@ function login(username, password) {
   }
 
   showLogin("아이디 또는 비밀번호가 올바르지 않습니다.");
+}
+
+function signup(username, displayName, password) {
+  const users = getUsers();
+
+  if (username.length < 3) {
+    els.loginError.textContent = "아이디는 3자 이상 입력하세요.";
+    return;
+  }
+
+  if (password.length < 4) {
+    els.loginError.textContent = "비밀번호는 4자 이상 입력하세요.";
+    return;
+  }
+
+  if (users[username]) {
+    els.loginError.textContent = "이미 사용 중인 아이디입니다.";
+    return;
+  }
+
+  users[username] = {
+    password,
+    displayName: displayName || username,
+  };
+  saveUsers(users);
+  localStorage.setItem(AUTH_STORAGE_KEY, username);
+  showApp();
+  render();
 }
 
 function logout() {
@@ -576,9 +656,20 @@ function learningText(id) {
 
 els.resetButton.addEventListener("click", () => startEpisode(state.episodeIndex));
 els.logoutButton.addEventListener("click", logout);
+els.showLoginButton.addEventListener("click", () => setAuthMode("login"));
+els.showSignupButton.addEventListener("click", () => setAuthMode("signup"));
 els.loginForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  login(els.usernameInput.value.trim(), els.passwordInput.value);
+  const username = els.usernameInput.value.trim();
+  const displayName = els.displayNameInput.value.trim();
+  const password = els.passwordInput.value;
+
+  if (authMode === "signup") {
+    signup(username, displayName, password);
+    return;
+  }
+
+  login(username, password);
 });
 
 document.querySelectorAll(".nav-item").forEach((button) => {
@@ -590,6 +681,7 @@ document.querySelectorAll(".nav-item").forEach((button) => {
 });
 
 resetScores(episodes[0]);
+ensureDefaultAccount();
 if (isLoggedIn()) {
   showApp();
   render();

@@ -11,11 +11,21 @@
       <form class="login-card" id="loginForm">
         <p class="eyebrow">twAIve</p>
         <h1>AI 윤리 스토리</h1>
-        <p class="login-copy">로그인 후 에피소드별 선택 기록과 학습 진행을 확인하세요.</p>
+        <p class="login-copy" id="authModeCopy">로그인 후 에피소드별 선택 기록과 학습 진행을 확인하세요.</p>
+
+        <div class="auth-switch" aria-label="로그인 또는 회원가입 선택">
+          <button class="auth-tab is-active" id="showLoginButton" type="button">로그인</button>
+          <button class="auth-tab" id="showSignupButton" type="button">회원가입</button>
+        </div>
 
         <label>
           <span>아이디</span>
           <input id="usernameInput" name="username" type="text" autocomplete="username" required />
+        </label>
+
+        <label class="signup-only">
+          <span>이름</span>
+          <input id="displayNameInput" name="displayName" type="text" autocomplete="name" />
         </label>
 
         <label>
@@ -31,7 +41,7 @@
 
         <p class="login-error" id="loginError" role="alert"></p>
 
-        <button class="login-button" type="submit">로그인</button>
+        <button class="login-button" id="authSubmitButton" type="submit">로그인</button>
       </form>
     </section>
 
