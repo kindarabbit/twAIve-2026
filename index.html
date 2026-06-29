@@ -41,12 +41,15 @@
 
         <label class="signup-only" hidden>
           <span>비밀번호 확인</span>
-          <input
-            id="passwordConfirmInput"
-            name="passwordConfirm"
-            type="password"
-            autocomplete="new-password"
-          />
+          <span class="input-row">
+            <input
+              id="passwordConfirmInput"
+              name="passwordConfirm"
+              type="password"
+              autocomplete="new-password"
+            />
+            <button class="check-button signup-only" id="checkPasswordButton" type="button" hidden>확인</button>
+          </span>
         </label>
 
         <p class="login-error" id="loginError" role="alert"></p>

@@ -355,6 +355,7 @@ const els = {
   displayNameInput: document.getElementById("displayNameInput"),
   passwordInput: document.getElementById("passwordInput"),
   passwordConfirmInput: document.getElementById("passwordConfirmInput"),
+  checkPasswordButton: document.getElementById("checkPasswordButton"),
   loginError: document.getElementById("loginError"),
   userLabel: document.getElementById("userLabel"),
   logoutButton: document.getElementById("logoutButton"),
@@ -499,23 +500,43 @@ async function checkUsernameAvailability() {
   }
 
   const { data, error } = await supabaseClient
-    .from("profiles")
-    .select("username")
-    .eq("username", username)
-    .maybeSingle();
+    .rpc("is_username_available", { requested_username: username });
 
   if (error) {
     showAuthError(`아이디 중복확인 오류: ${error.message}`);
     return false;
   }
 
-  if (data) {
+  if (!data) {
     showAuthError("이미 사용 중인 아이디입니다.");
     return false;
   }
 
   checkedUsername = username;
   showAuthError("사용 가능한 아이디입니다.");
+  return true;
+}
+
+function checkPasswordMatch() {
+  const password = els.passwordInput.value;
+  const passwordConfirm = els.passwordConfirmInput.value;
+
+  if (!password || !passwordConfirm) {
+    showAuthError("비밀번호와 비밀번호 확인을 모두 입력하세요.");
+    return false;
+  }
+
+  if (password.length < 6) {
+    showAuthError("비밀번호는 6자 이상 입력하세요.");
+    return false;
+  }
+
+  if (password !== passwordConfirm) {
+    showAuthError("비밀번호가 다릅니다.");
+    return false;
+  }
+
+  showAuthError("비밀번호가 일치합니다.");
   return true;
 }
 
@@ -786,6 +807,7 @@ els.logoutButton.addEventListener("click", logout);
 els.showLoginButton.addEventListener("click", () => setAuthMode("login"));
 els.showSignupButton.addEventListener("click", () => setAuthMode("signup"));
 els.checkUsernameButton.addEventListener("click", checkUsernameAvailability);
+els.checkPasswordButton.addEventListener("click", checkPasswordMatch);
 els.usernameInput.addEventListener("input", () => {
   if (normalizeUsername(els.usernameInput.value) !== checkedUsername) {
     checkedUsername = "";

@@ -34,6 +34,21 @@ grant usage on schema public to anon, authenticated;
 grant select on public.profiles to anon;
 grant select, insert, update on public.profiles to authenticated;
 
+create or replace function public.is_username_available(requested_username text)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select not exists (
+    select 1
+    from public.profiles
+    where username = lower(trim(requested_username))
+  );
+$$;
+
+grant execute on function public.is_username_available(text) to anon, authenticated;
+
 drop policy if exists "Users can read their own profile" on public.profiles;
 drop policy if exists "Anyone can check usernames" on public.profiles;
 drop policy if exists "Users can create their own profile" on public.profiles;
