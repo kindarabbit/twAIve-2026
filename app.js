@@ -327,6 +327,7 @@ const state = {
   history: [],
   feedback: "",
   view: "story",
+  profile: null,
 };
 
 const SUPABASE_CONFIG = window.TWAIVE_SUPABASE || {};
@@ -384,9 +385,10 @@ function isLoggedIn() {
 function showApp() {
   document.body.classList.add("is-authenticated");
   els.userLabel.textContent =
+    state.profile?.display_name ||
     currentUser?.user_metadata?.display_name ||
+    state.profile?.username ||
     currentUser?.user_metadata?.username ||
-    currentUser?.email ||
     "사용자";
 }
 
@@ -466,6 +468,7 @@ async function loadSession() {
         metadata.display_name || metadata.username,
       );
     }
+    await loadProfile();
     showApp();
     render();
   } else {
@@ -490,8 +493,31 @@ async function login(username, password) {
   }
 
   currentUser = data.user;
+  await loadProfile();
   showApp();
   render();
+}
+
+async function loadProfile() {
+  if (!supabaseClient || !currentUser) {
+    state.profile = null;
+    return null;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select("username, auth_email, display_name, created_at")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    showAuthError(`프로필을 불러오지 못했습니다: ${error.message}`);
+    state.profile = null;
+    return null;
+  }
+
+  state.profile = data;
+  return data;
 }
 
 async function checkUsernameAvailability() {
@@ -604,6 +630,7 @@ async function signup(username, displayName, password, passwordConfirm) {
   }
 
   await saveProfile(currentUser, username, displayName);
+  await loadProfile();
   showApp();
   render();
 }
@@ -621,11 +648,50 @@ async function saveProfile(user, username, displayName) {
   }
 }
 
+async function updateDisplayName(displayName) {
+  if (!supabaseClient || !currentUser) {
+    state.feedback = "로그인이 필요합니다.";
+    render();
+    return;
+  }
+
+  const nextName = displayName.trim();
+  if (!nextName) {
+    state.feedback = "이름을 입력하세요.";
+    render();
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("profiles")
+    .update({ display_name: nextName })
+    .eq("id", currentUser.id);
+
+  if (error) {
+    state.feedback = `프로필 수정 오류: ${error.message}`;
+    render();
+    return;
+  }
+
+  await supabaseClient.auth.updateUser({
+    data: {
+      ...currentUser.user_metadata,
+      display_name: nextName,
+    },
+  });
+
+  await loadProfile();
+  state.feedback = "프로필이 수정되었습니다.";
+  showApp();
+  render();
+}
+
 async function logout() {
   if (supabaseClient) {
     await supabaseClient.auth.signOut();
   }
   currentUser = null;
+  state.profile = null;
   showLogin();
 }
 
@@ -714,6 +780,35 @@ function renderMeters() {
 function renderChoices(scene) {
   els.choices.innerHTML = "";
 
+  if (state.view === "profile") {
+    const profile = state.profile || {};
+    const form = document.createElement("form");
+    form.className = "profile-form";
+    form.innerHTML = `
+      <label>
+        <span>아이디</span>
+        <input type="text" value="${escapeAttribute(profile.username || "")}" readonly />
+      </label>
+      <label>
+        <span>이름</span>
+        <input id="profileNameInput" type="text" value="${escapeAttribute(profile.display_name || "")}" />
+      </label>
+      <label>
+        <span>가입일</span>
+        <input type="text" value="${escapeAttribute(formatProfileDate(profile.created_at))}" readonly />
+      </label>
+      <button class="choice-button is-primary profile-save" type="submit">
+        <strong>저장</strong>프로필 수정
+      </button>
+    `;
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      updateDisplayName(form.querySelector("#profileNameInput").value);
+    });
+    els.choices.appendChild(form);
+    return;
+  }
+
   if (state.view !== "story") {
     const back = document.createElement("button");
     back.type = "button";
@@ -779,6 +874,17 @@ function render() {
     els.sceneText.textContent = learningText(episode.id);
     els.quoteText.textContent = "정답을 외우는 것보다, 선택 전후의 책임을 이해하는 것이 목표입니다.";
     els.feedbackBox.textContent = episode.topic;
+  } else if (state.view === "profile") {
+    const profile = state.profile || {};
+    els.chapterLine.textContent = "My Page";
+    els.sceneTitle.textContent = "개인정보";
+    els.sceneText.textContent = [
+      `아이디: ${profile.username || "-"}`,
+      `이름: ${profile.display_name || "-"}`,
+      `가입일: ${formatProfileDate(profile.created_at)}`,
+    ].join("\n");
+    els.quoteText.textContent = "이름은 언제든 수정할 수 있습니다. 아이디는 계정 식별용이라 고정됩니다.";
+    els.feedbackBox.textContent = state.feedback || "프로필 정보를 확인하고 수정할 수 있습니다.";
   } else {
     els.chapterLine.textContent = scene.chapter;
     els.sceneTitle.textContent = scene.title;
@@ -809,6 +915,31 @@ function learningText(id) {
       "AI 챗봇은 위로와 정리에 도움을 줄 수 있지만 전문 상담과 현실 관계를 대신할 수는 없습니다.\n수면, 학교생활, 친구 관계가 흔들릴 정도라면 신뢰할 수 있는 사람에게 도움을 요청해야 합니다.",
   };
   return texts[id];
+}
+
+function formatProfileDate(value) {
+  if (!value) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(value));
+}
+
+function escapeAttribute(value) {
+  return String(value).replace(/[&<>"']/g, (character) => {
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[character];
+  });
 }
 
 els.resetButton.addEventListener("click", () => startEpisode(state.episodeIndex));
