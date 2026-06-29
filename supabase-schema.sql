@@ -1,6 +1,6 @@
 -- Run this in the Supabase SQL editor after creating your project.
 -- Supabase Auth still stores the password securely.
--- The app shows only username/password, and internally uses username@twaive.local for Auth.
+-- The app shows only username/password, and internally uses username@twaive-user.example.com for Auth.
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,

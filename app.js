@@ -356,6 +356,7 @@ const els = {
   passwordInput: document.getElementById("passwordInput"),
   passwordConfirmInput: document.getElementById("passwordConfirmInput"),
   checkPasswordButton: document.getElementById("checkPasswordButton"),
+  passwordCheckMessage: document.getElementById("passwordCheckMessage"),
   loginError: document.getElementById("loginError"),
   userLabel: document.getElementById("userLabel"),
   logoutButton: document.getElementById("logoutButton"),
@@ -408,6 +409,7 @@ function setAuthMode(mode) {
     ? "이름, 아이디, 비밀번호로 새 계정을 만들 수 있습니다."
     : "로그인 후 에피소드별 선택 기록과 학습 진행을 확인하세요.";
   els.loginError.textContent = "";
+  showPasswordCheckMessage("", "");
 }
 
 function showLogin(message = "") {
@@ -416,6 +418,7 @@ function showLogin(message = "") {
   els.loginError.textContent = message;
   els.passwordInput.value = "";
   els.passwordConfirmInput.value = "";
+  showPasswordCheckMessage("", "");
   requestAnimationFrame(() => els.usernameInput.focus());
 }
 
@@ -423,12 +426,18 @@ function showAuthError(message) {
   els.loginError.textContent = message;
 }
 
+function showPasswordCheckMessage(message, type) {
+  els.passwordCheckMessage.textContent = message;
+  els.passwordCheckMessage.classList.toggle("is-success", type === "success");
+  els.passwordCheckMessage.classList.toggle("is-error", type === "error");
+}
+
 function normalizeUsername(username) {
   return username.trim().toLowerCase();
 }
 
 function usernameToAuthEmail(username) {
-  return `${normalizeUsername(username)}@twaive.local`;
+  return `${normalizeUsername(username)}@twaive-user.example.com`;
 }
 
 function isValidUsername(username) {
@@ -522,21 +531,21 @@ function checkPasswordMatch() {
   const passwordConfirm = els.passwordConfirmInput.value;
 
   if (!password || !passwordConfirm) {
-    showAuthError("비밀번호와 비밀번호 확인을 모두 입력하세요.");
+    showPasswordCheckMessage("비밀번호와 비밀번호 확인을 모두 입력하세요.", "error");
     return false;
   }
 
   if (password.length < 6) {
-    showAuthError("비밀번호는 6자 이상 입력하세요.");
+    showPasswordCheckMessage("비밀번호는 6자 이상 입력하세요.", "error");
     return false;
   }
 
   if (password !== passwordConfirm) {
-    showAuthError("비밀번호가 다릅니다.");
+    showPasswordCheckMessage("비밀번호가 다릅니다.", "error");
     return false;
   }
 
-  showAuthError("비밀번호가 일치합니다.");
+  showPasswordCheckMessage("비밀번호가 일치합니다.", "success");
   return true;
 }
 

@@ -169,6 +169,20 @@ body.is-signup .login-card .check-button.signup-only {
   font-weight: 700;
 }
 
+.auth-message {
+  min-height: 22px;
+  margin: -6px 0 0;
+  font-weight: 800;
+}
+
+.auth-message.is-success {
+  color: var(--mint);
+}
+
+.auth-message.is-error {
+  color: #ffb5c4;
+}
+
 .login-button,
 .text-button {
   border: 1px solid rgba(255, 255, 255, 0.2);
