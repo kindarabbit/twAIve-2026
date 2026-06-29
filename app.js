@@ -505,7 +505,7 @@ async function checkUsernameAvailability() {
     .maybeSingle();
 
   if (error) {
-    showAuthError("아이디 중복확인 중 오류가 발생했습니다. Supabase SQL 설정을 확인하세요.");
+    showAuthError(`아이디 중복확인 오류: ${error.message}`);
     return false;
   }
 

@@ -63,3 +63,5 @@ for update
 to authenticated
 using (auth.uid() = id)
 with check (auth.uid() = id);
+
+notify pgrst, 'reload schema';
