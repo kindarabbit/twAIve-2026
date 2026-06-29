@@ -371,6 +371,8 @@ const els = {
   choices: document.getElementById("choices"),
   feedbackBox: document.getElementById("feedbackBox"),
   resetButton: document.getElementById("resetButton"),
+  signupOnlyItems: document.querySelectorAll(".signup-only"),
+  loginOnlyItems: document.querySelectorAll(".login-only"),
 };
 
 function isLoggedIn() {
@@ -392,6 +394,12 @@ function setAuthMode(mode) {
   checkedUsername = "";
 
   document.body.classList.toggle("is-signup", isSignup);
+  els.signupOnlyItems.forEach((item) => {
+    item.hidden = !isSignup;
+  });
+  els.loginOnlyItems.forEach((item) => {
+    item.hidden = isSignup;
+  });
   els.displayNameInput.required = isSignup;
   els.passwordConfirmInput.required = isSignup;
   els.authSubmitButton.textContent = isSignup ? "회원가입" : "로그인";

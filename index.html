@@ -13,17 +13,17 @@
         <h1>AI 윤리 스토리</h1>
         <p class="login-copy" id="authModeCopy">로그인 후 에피소드별 선택 기록과 학습 진행을 확인하세요.</p>
 
-        <button class="auth-back signup-only" id="showLoginButton" type="button">로그인으로 돌아가기</button>
+        <button class="auth-back signup-only" id="showLoginButton" type="button" hidden>로그인으로 돌아가기</button>
 
         <label>
           <span>아이디</span>
           <span class="input-row">
             <input id="usernameInput" name="username" type="text" autocomplete="username" required />
-            <button class="check-button signup-only" id="checkUsernameButton" type="button">중복확인</button>
+            <button class="check-button signup-only" id="checkUsernameButton" type="button" hidden>중복확인</button>
           </span>
         </label>
 
-        <label class="signup-only">
+        <label class="signup-only" hidden>
           <span>이름</span>
           <input id="displayNameInput" name="displayName" type="text" autocomplete="name" />
         </label>
@@ -39,7 +39,7 @@
           />
         </label>
 
-        <label class="signup-only">
+        <label class="signup-only" hidden>
           <span>비밀번호 확인</span>
           <input
             id="passwordConfirmInput"
