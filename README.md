@@ -36,3 +36,18 @@ Use goaljaby when a PRD should become operational goal documents:
 - `PLAN.md`
 - `PROGRESS.md`
 - `goal-command.md`
+
+## Supabase Auth Setup
+
+The site is deployed on GitHub Pages, so user accounts need an external auth/database service.
+This project uses Supabase Auth.
+
+1. Create a Supabase project.
+2. Open `supabase-config.js` and replace:
+   - `YOUR_SUPABASE_PROJECT_URL`
+   - `YOUR_SUPABASE_ANON_KEY`
+3. In Supabase, open the SQL editor and run `supabase-schema.sql`.
+4. In Authentication settings, add this GitHub Pages URL to allowed redirect/site URLs:
+   - `https://kindarabbit.github.io/twAIve-2026/`
+
+User email/password accounts are stored in Supabase Auth. Display names are stored in the `profiles` table.

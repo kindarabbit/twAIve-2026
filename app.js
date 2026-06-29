@@ -329,14 +329,18 @@ const state = {
   view: "story",
 };
 
-const AUTH_STORAGE_KEY = "twaive-current-user";
-const USERS_STORAGE_KEY = "twaive-users";
-const DEFAULT_ACCOUNT = {
-  username: "admin",
-  password: "1234",
-  displayName: "admin",
-};
+const SUPABASE_CONFIG = window.TWAIVE_SUPABASE || {};
+const isSupabaseConfigured =
+  SUPABASE_CONFIG.url &&
+  SUPABASE_CONFIG.anonKey &&
+  !SUPABASE_CONFIG.url.includes("YOUR_SUPABASE") &&
+  !SUPABASE_CONFIG.anonKey.includes("YOUR_SUPABASE");
+const supabaseClient = isSupabaseConfigured
+  ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+  : null;
+
 let authMode = "login";
+let currentUser = null;
 
 const els = {
   loginScreen: document.getElementById("loginScreen"),
@@ -366,39 +370,14 @@ const els = {
   resetButton: document.getElementById("resetButton"),
 };
 
-function getUsers() {
-  try {
-    return JSON.parse(localStorage.getItem(USERS_STORAGE_KEY)) || {};
-  } catch {
-    return {};
-  }
-}
-
-function saveUsers(users) {
-  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-}
-
-function ensureDefaultAccount() {
-  const users = getUsers();
-  if (!users[DEFAULT_ACCOUNT.username]) {
-    users[DEFAULT_ACCOUNT.username] = {
-      password: DEFAULT_ACCOUNT.password,
-      displayName: DEFAULT_ACCOUNT.displayName,
-    };
-    saveUsers(users);
-  }
-}
-
 function isLoggedIn() {
-  return Boolean(localStorage.getItem(AUTH_STORAGE_KEY));
+  return Boolean(currentUser);
 }
 
 function showApp() {
-  const username = localStorage.getItem(AUTH_STORAGE_KEY);
-  const users = getUsers();
-  const user = users[username];
   document.body.classList.add("is-authenticated");
-  els.userLabel.textContent = user?.displayName || username;
+  els.userLabel.textContent =
+    currentUser?.user_metadata?.display_name || currentUser?.email || "사용자";
 }
 
 function setAuthMode(mode) {
@@ -424,51 +403,108 @@ function showLogin(message = "") {
   requestAnimationFrame(() => els.usernameInput.focus());
 }
 
-function login(username, password) {
-  const users = getUsers();
-  const user = users[username];
-
-  if (user && user.password === password) {
-    localStorage.setItem(AUTH_STORAGE_KEY, username);
-    els.loginError.textContent = "";
-    showApp();
-    render();
-    return;
-  }
-
-  showLogin("아이디 또는 비밀번호가 올바르지 않습니다.");
+function showAuthError(message) {
+  els.loginError.textContent = message;
 }
 
-function signup(username, displayName, password) {
-  const users = getUsers();
-
-  if (username.length < 3) {
-    els.loginError.textContent = "아이디는 3자 이상 입력하세요.";
+async function loadSession() {
+  if (!supabaseClient) {
+    showLogin("Supabase 설정이 필요합니다. supabase-config.js에 URL과 anon key를 입력하세요.");
     return;
   }
 
-  if (password.length < 4) {
-    els.loginError.textContent = "비밀번호는 4자 이상 입력하세요.";
+  const { data, error } = await supabaseClient.auth.getSession();
+  if (error) {
+    showLogin(error.message);
     return;
   }
 
-  if (users[username]) {
-    els.loginError.textContent = "이미 사용 중인 아이디입니다.";
+  currentUser = data.session?.user || null;
+  if (currentUser) {
+    await saveProfile(currentUser, currentUser.user_metadata?.display_name || currentUser.email);
+    showApp();
+    render();
+  } else {
+    showLogin();
+  }
+}
+
+async function login(email, password) {
+  if (!supabaseClient) {
+    showAuthError("Supabase 설정이 필요합니다.");
     return;
   }
 
-  users[username] = {
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
     password,
-    displayName: displayName || username,
-  };
-  saveUsers(users);
-  localStorage.setItem(AUTH_STORAGE_KEY, username);
+  });
+
+  if (error) {
+    showAuthError("이메일 또는 비밀번호가 올바르지 않습니다.");
+    return;
+  }
+
+  currentUser = data.user;
+  await saveProfile(currentUser, currentUser.user_metadata?.display_name || currentUser.email);
   showApp();
   render();
 }
 
-function logout() {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
+async function signup(email, displayName, password) {
+  if (!supabaseClient) {
+    showAuthError("Supabase 설정이 필요합니다.");
+    return;
+  }
+
+  if (password.length < 6) {
+    showAuthError("비밀번호는 6자 이상 입력하세요.");
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        display_name: displayName || email,
+      },
+    },
+  });
+
+  if (error) {
+    showAuthError(error.message);
+    return;
+  }
+
+  currentUser = data.user;
+  if (!data.session) {
+    showLogin("가입 확인 메일을 보냈습니다. 이메일 인증 후 로그인하세요.");
+    return;
+  }
+
+  await saveProfile(currentUser, displayName || email);
+  showApp();
+  render();
+}
+
+async function saveProfile(user, displayName) {
+  const { error } = await supabaseClient.from("profiles").upsert({
+    id: user.id,
+    email: user.email,
+    display_name: displayName,
+  });
+
+  if (error) {
+    showAuthError("프로필 저장 중 오류가 발생했습니다. Supabase SQL 설정을 확인하세요.");
+  }
+}
+
+async function logout() {
+  if (supabaseClient) {
+    await supabaseClient.auth.signOut();
+  }
+  currentUser = null;
   showLogin();
 }
 
@@ -660,16 +696,16 @@ els.showLoginButton.addEventListener("click", () => setAuthMode("login"));
 els.showSignupButton.addEventListener("click", () => setAuthMode("signup"));
 els.loginForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const username = els.usernameInput.value.trim();
+  const email = els.usernameInput.value.trim();
   const displayName = els.displayNameInput.value.trim();
   const password = els.passwordInput.value;
 
   if (authMode === "signup") {
-    signup(username, displayName, password);
+    signup(email, displayName, password);
     return;
   }
 
-  login(username, password);
+  login(email, password);
 });
 
 document.querySelectorAll(".nav-item").forEach((button) => {
@@ -681,10 +717,4 @@ document.querySelectorAll(".nav-item").forEach((button) => {
 });
 
 resetScores(episodes[0]);
-ensureDefaultAccount();
-if (isLoggedIn()) {
-  showApp();
-  render();
-} else {
-  showLogin();
-}
+loadSession();
