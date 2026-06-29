@@ -341,6 +341,7 @@ const supabaseClient = isSupabaseConfigured
 
 let authMode = "login";
 let currentUser = null;
+let checkedUsername = "";
 
 const els = {
   loginScreen: document.getElementById("loginScreen"),
@@ -350,8 +351,10 @@ const els = {
   showSignupButton: document.getElementById("showSignupButton"),
   authSubmitButton: document.getElementById("authSubmitButton"),
   usernameInput: document.getElementById("usernameInput"),
+  checkUsernameButton: document.getElementById("checkUsernameButton"),
   displayNameInput: document.getElementById("displayNameInput"),
   passwordInput: document.getElementById("passwordInput"),
+  passwordConfirmInput: document.getElementById("passwordConfirmInput"),
   loginError: document.getElementById("loginError"),
   userLabel: document.getElementById("userLabel"),
   logoutButton: document.getElementById("logoutButton"),
@@ -377,20 +380,25 @@ function isLoggedIn() {
 function showApp() {
   document.body.classList.add("is-authenticated");
   els.userLabel.textContent =
-    currentUser?.user_metadata?.display_name || currentUser?.email || "사용자";
+    currentUser?.user_metadata?.display_name ||
+    currentUser?.user_metadata?.username ||
+    currentUser?.email ||
+    "사용자";
 }
 
 function setAuthMode(mode) {
   authMode = mode;
   const isSignup = mode === "signup";
+  checkedUsername = "";
 
   document.body.classList.toggle("is-signup", isSignup);
   els.showLoginButton.classList.toggle("is-active", !isSignup);
   els.showSignupButton.classList.toggle("is-active", isSignup);
   els.displayNameInput.required = isSignup;
+  els.passwordConfirmInput.required = isSignup;
   els.authSubmitButton.textContent = isSignup ? "회원가입" : "로그인";
   els.authModeCopy.textContent = isSignup
-    ? "새 계정을 만들면 이 브라우저에 회원 정보가 저장됩니다."
+    ? "이름, 아이디, 비밀번호로 새 계정을 만들 수 있습니다."
     : "로그인 후 에피소드별 선택 기록과 학습 진행을 확인하세요.";
   els.loginError.textContent = "";
 }
@@ -400,11 +408,24 @@ function showLogin(message = "") {
   document.body.classList.remove("is-authenticated");
   els.loginError.textContent = message;
   els.passwordInput.value = "";
+  els.passwordConfirmInput.value = "";
   requestAnimationFrame(() => els.usernameInput.focus());
 }
 
 function showAuthError(message) {
   els.loginError.textContent = message;
+}
+
+function normalizeUsername(username) {
+  return username.trim().toLowerCase();
+}
+
+function usernameToAuthEmail(username) {
+  return `${normalizeUsername(username)}@twaive.local`;
+}
+
+function isValidUsername(username) {
+  return /^[a-z0-9_]{3,20}$/.test(username);
 }
 
 async function loadSession() {
@@ -421,7 +442,14 @@ async function loadSession() {
 
   currentUser = data.session?.user || null;
   if (currentUser) {
-    await saveProfile(currentUser, currentUser.user_metadata?.display_name || currentUser.email);
+    const metadata = currentUser.user_metadata || {};
+    if (metadata.username) {
+      await saveProfile(
+        currentUser,
+        metadata.username,
+        metadata.display_name || metadata.username,
+      );
+    }
     showApp();
     render();
   } else {
@@ -429,31 +457,81 @@ async function loadSession() {
   }
 }
 
-async function login(email, password) {
+async function login(username, password) {
   if (!supabaseClient) {
     showAuthError("Supabase 설정이 필요합니다.");
     return;
   }
 
   const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email,
+    email: usernameToAuthEmail(username),
     password,
   });
 
   if (error) {
-    showAuthError("이메일 또는 비밀번호가 올바르지 않습니다.");
+    showAuthError("아이디 또는 비밀번호가 올바르지 않습니다.");
     return;
   }
 
   currentUser = data.user;
-  await saveProfile(currentUser, currentUser.user_metadata?.display_name || currentUser.email);
   showApp();
   render();
 }
 
-async function signup(email, displayName, password) {
+async function checkUsernameAvailability() {
   if (!supabaseClient) {
     showAuthError("Supabase 설정이 필요합니다.");
+    return false;
+  }
+
+  const username = normalizeUsername(els.usernameInput.value);
+  checkedUsername = "";
+
+  if (!isValidUsername(username)) {
+    showAuthError("아이디는 영문 소문자, 숫자, 밑줄(_) 3-20자로 입력하세요.");
+    return false;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select("username")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (error) {
+    showAuthError("아이디 중복확인 중 오류가 발생했습니다. Supabase SQL 설정을 확인하세요.");
+    return false;
+  }
+
+  if (data) {
+    showAuthError("이미 사용 중인 아이디입니다.");
+    return false;
+  }
+
+  checkedUsername = username;
+  showAuthError("사용 가능한 아이디입니다.");
+  return true;
+}
+
+async function signup(username, displayName, password, passwordConfirm) {
+  if (!supabaseClient) {
+    showAuthError("Supabase 설정이 필요합니다.");
+    return;
+  }
+
+  username = normalizeUsername(username);
+  if (!isValidUsername(username)) {
+    showAuthError("아이디는 영문 소문자, 숫자, 밑줄(_) 3-20자로 입력하세요.");
+    return;
+  }
+
+  if (checkedUsername !== username) {
+    showAuthError("아이디 중복확인을 먼저 해주세요.");
+    return;
+  }
+
+  if (!displayName.trim()) {
+    showAuthError("이름을 입력하세요.");
     return;
   }
 
@@ -462,12 +540,18 @@ async function signup(email, displayName, password) {
     return;
   }
 
+  if (password !== passwordConfirm) {
+    showAuthError("비밀번호 확인이 일치하지 않습니다.");
+    return;
+  }
+
   const { data, error } = await supabaseClient.auth.signUp({
-    email,
+    email: usernameToAuthEmail(username),
     password,
     options: {
       data: {
-        display_name: displayName || email,
+        username,
+        display_name: displayName,
       },
     },
   });
@@ -479,19 +563,20 @@ async function signup(email, displayName, password) {
 
   currentUser = data.user;
   if (!data.session) {
-    showLogin("가입 확인 메일을 보냈습니다. 이메일 인증 후 로그인하세요.");
+    showLogin("회원가입이 완료되었습니다. 로그인해 주세요.");
     return;
   }
 
-  await saveProfile(currentUser, displayName || email);
+  await saveProfile(currentUser, username, displayName);
   showApp();
   render();
 }
 
-async function saveProfile(user, displayName) {
+async function saveProfile(user, username, displayName) {
   const { error } = await supabaseClient.from("profiles").upsert({
     id: user.id,
-    email: user.email,
+    username,
+    auth_email: user.email,
     display_name: displayName,
   });
 
@@ -694,18 +779,25 @@ els.resetButton.addEventListener("click", () => startEpisode(state.episodeIndex)
 els.logoutButton.addEventListener("click", logout);
 els.showLoginButton.addEventListener("click", () => setAuthMode("login"));
 els.showSignupButton.addEventListener("click", () => setAuthMode("signup"));
+els.checkUsernameButton.addEventListener("click", checkUsernameAvailability);
+els.usernameInput.addEventListener("input", () => {
+  if (normalizeUsername(els.usernameInput.value) !== checkedUsername) {
+    checkedUsername = "";
+  }
+});
 els.loginForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const email = els.usernameInput.value.trim();
+  const username = els.usernameInput.value.trim();
   const displayName = els.displayNameInput.value.trim();
   const password = els.passwordInput.value;
+  const passwordConfirm = els.passwordConfirmInput.value;
 
   if (authMode === "signup") {
-    signup(email, displayName, password);
+    signup(username, displayName, password, passwordConfirm);
     return;
   }
 
-  login(email, password);
+  login(username, password);
 });
 
 document.querySelectorAll(".nav-item").forEach((button) => {

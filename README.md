@@ -47,7 +47,10 @@ This project uses Supabase Auth.
    - `YOUR_SUPABASE_PROJECT_URL`
    - `YOUR_SUPABASE_ANON_KEY`
 3. In Supabase, open the SQL editor and run `supabase-schema.sql`.
-4. In Authentication settings, add this GitHub Pages URL to allowed redirect/site URLs:
+4. In Authentication settings, disable email confirmation for this demo username/password flow.
+   The UI asks for username/password, while Supabase Auth receives an internal email like
+   `username@twaive.local`.
+5. In Authentication settings, add this GitHub Pages URL to allowed redirect/site URLs:
    - `https://kindarabbit.github.io/twAIve-2026/`
 
-User email/password accounts are stored in Supabase Auth. Display names are stored in the `profiles` table.
+Passwords are stored securely by Supabase Auth. Usernames and display names are stored in the `profiles` table.

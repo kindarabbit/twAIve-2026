@@ -111,11 +111,36 @@ body.is-signup .signup-only {
   display: grid;
 }
 
+body.is-signup .check-button.signup-only {
+  display: inline-grid;
+}
+
 .login-card label {
   display: grid;
   gap: 7px;
   color: var(--paper);
   font-weight: 700;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.check-button {
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.check-button:hover {
+  border-color: rgba(255, 255, 255, 0.42);
 }
 
 .login-card input {

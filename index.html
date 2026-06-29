@@ -19,8 +19,11 @@
         </div>
 
         <label>
-          <span>이메일</span>
-          <input id="usernameInput" name="email" type="email" autocomplete="email" required />
+          <span>아이디</span>
+          <span class="input-row">
+            <input id="usernameInput" name="username" type="text" autocomplete="username" required />
+            <button class="check-button signup-only" id="checkUsernameButton" type="button">중복확인</button>
+          </span>
         </label>
 
         <label class="signup-only">
@@ -36,6 +39,16 @@
             type="password"
             autocomplete="current-password"
             required
+          />
+        </label>
+
+        <label class="signup-only">
+          <span>비밀번호 확인</span>
+          <input
+            id="passwordConfirmInput"
+            name="passwordConfirm"
+            type="password"
+            autocomplete="new-password"
           />
         </label>
 
