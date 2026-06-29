@@ -54,3 +54,4 @@ This project uses Supabase Auth.
    - `https://kindarabbit.github.io/twAIve-2026/`
 
 Passwords are stored securely by Supabase Auth. Usernames and display names are stored in the `profiles` table.
+Episode progress is stored in the `user_episode_progress` table, including the current scene, score, choices, feedback, and ending state.

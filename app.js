@@ -469,6 +469,7 @@ async function loadSession() {
       );
     }
     await loadProfile();
+    await loadEpisodeProgress(state.episodeIndex);
     showApp();
     render();
   } else {
@@ -494,6 +495,7 @@ async function login(username, password) {
 
   currentUser = data.user;
   await loadProfile();
+  await loadEpisodeProgress(state.episodeIndex);
   showApp();
   render();
 }
@@ -711,18 +713,85 @@ function resetScores(episode) {
   state.scores = Object.fromEntries(episode.meters.map((meter) => [meter, 50]));
 }
 
-function startEpisode(index) {
+async function loadEpisodeProgress(index) {
+  if (!supabaseClient || !currentUser) {
+    return false;
+  }
+
+  const episode = episodes[index];
+  const { data, error } = await supabaseClient
+    .from("user_episode_progress")
+    .select("scene_id, scores, history, feedback")
+    .eq("user_id", currentUser.id)
+    .eq("episode_id", episode.id)
+    .maybeSingle();
+
+  if (error) {
+    state.feedback = `기록 불러오기 오류: ${error.message}`;
+    return false;
+  }
+
+  if (!data) {
+    return false;
+  }
+
+  if (data.scene_id && episode.scenes[data.scene_id]) {
+    state.sceneId = data.scene_id;
+  }
+  state.scores = {
+    ...Object.fromEntries(episode.meters.map((meter) => [meter, 50])),
+    ...(data.scores || {}),
+  };
+  state.history = Array.isArray(data.history) ? data.history : [];
+  state.feedback = data.feedback || "";
+  return true;
+}
+
+async function saveEpisodeProgress() {
+  if (!supabaseClient || !currentUser) {
+    return;
+  }
+
+  const scene = activeScene();
+  const { error } = await supabaseClient.from("user_episode_progress").upsert(
+    {
+      user_id: currentUser.id,
+      episode_id: activeEpisode().id,
+      scene_id: state.sceneId,
+      score: scoreAverage(),
+      scores: state.scores,
+      history: state.history,
+      feedback: state.feedback,
+      completed: Boolean(scene.end),
+      ending: scene.end ? endingName() : null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,episode_id" },
+  );
+
+  if (error) {
+    state.feedback = `기록 저장 오류: ${error.message}`;
+  }
+}
+
+async function startEpisode(index, options = {}) {
   state.episodeIndex = index;
   state.sceneId = episodes[index].start;
   state.history = [];
   state.feedback = "";
   state.view = "story";
   resetScores(episodes[index]);
+  if (options.loadSaved !== false) {
+    await loadEpisodeProgress(index);
+  }
+  if (options.saveReset) {
+    await saveEpisodeProgress();
+  }
   syncNav();
   render();
 }
 
-function applyChoice(choice) {
+async function applyChoice(choice) {
   Object.entries(choice.delta || {}).forEach(([key, value]) => {
     state.scores[key] = clamp((state.scores[key] ?? 50) + value);
   });
@@ -734,6 +803,7 @@ function applyChoice(choice) {
   state.feedback = choice.feedback;
   state.sceneId = choice.next;
   state.view = "story";
+  await saveEpisodeProgress();
   render();
 }
 
@@ -827,7 +897,9 @@ function renderChoices(scene) {
     replay.type = "button";
     replay.className = "choice-button is-primary";
     replay.innerHTML = `<strong>${endingName()}</strong>다시 플레이`;
-    replay.addEventListener("click", () => startEpisode(state.episodeIndex));
+    replay.addEventListener("click", () =>
+      startEpisode(state.episodeIndex, { loadSaved: false, saveReset: true }),
+    );
     els.choices.appendChild(replay);
 
     const nextEpisode = document.createElement("button");
@@ -942,7 +1014,9 @@ function escapeAttribute(value) {
   });
 }
 
-els.resetButton.addEventListener("click", () => startEpisode(state.episodeIndex));
+els.resetButton.addEventListener("click", () =>
+  startEpisode(state.episodeIndex, { loadSaved: false, saveReset: true }),
+);
 els.logoutButton.addEventListener("click", logout);
 els.showLoginButton.addEventListener("click", () => setAuthMode("login"));
 els.showSignupButton.addEventListener("click", () => setAuthMode("signup"));
