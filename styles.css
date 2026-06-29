@@ -78,7 +78,7 @@ body.is-authenticated .login-screen {
   line-height: 1.6;
 }
 
-.signup-only {
+.login-card .signup-only {
   display: none;
 }
 
@@ -86,11 +86,11 @@ body.is-signup .login-only {
   display: none;
 }
 
-body.is-signup .signup-only {
+body.is-signup .login-card .signup-only {
   display: grid;
 }
 
-body.is-signup .check-button.signup-only {
+body.is-signup .login-card .check-button.signup-only {
   display: inline-grid;
 }
 
