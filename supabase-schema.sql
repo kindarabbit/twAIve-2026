@@ -30,6 +30,10 @@ end $$;
 
 alter table public.profiles enable row level security;
 
+grant usage on schema public to anon, authenticated;
+grant select on public.profiles to anon;
+grant select, insert, update on public.profiles to authenticated;
+
 drop policy if exists "Users can read their own profile" on public.profiles;
 drop policy if exists "Anyone can check usernames" on public.profiles;
 drop policy if exists "Users can create their own profile" on public.profiles;
