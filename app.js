@@ -392,8 +392,6 @@ function setAuthMode(mode) {
   checkedUsername = "";
 
   document.body.classList.toggle("is-signup", isSignup);
-  els.showLoginButton.classList.toggle("is-active", !isSignup);
-  els.showSignupButton.classList.toggle("is-active", isSignup);
   els.displayNameInput.required = isSignup;
   els.passwordConfirmInput.required = isSignup;
   els.authSubmitButton.textContent = isSignup ? "회원가입" : "로그인";
