@@ -56,3 +56,4 @@ This project uses Supabase Auth.
 Passwords are stored securely by Supabase Auth. Usernames and display names are stored in the `profiles` table.
 Episode progress is stored in the `user_episode_progress` table, including the current scene, score, choices, feedback, and ending state.
 Each episode includes a before/after reflection question and a final learning report to show how the user's AI ethics awareness changes through the story.
+The current learning set covers five topics: deepfakes and portrait rights, AI misinformation, chatbot dependence, AI-assisted assignments, and privacy in recommendation algorithms.
