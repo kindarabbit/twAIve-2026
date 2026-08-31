@@ -88,6 +88,8 @@ create table if not exists public.user_episode_progress (
   scores jsonb not null default '{}'::jsonb,
   history jsonb not null default '[]'::jsonb,
   feedback text not null default '',
+  story_mode text not null default 'pre',
+  assessment jsonb not null default '{}'::jsonb,
   completed boolean not null default false,
   ending text,
   created_at timestamptz not null default now(),
@@ -102,6 +104,8 @@ alter table public.user_episode_progress add column if not exists score integer 
 alter table public.user_episode_progress add column if not exists scores jsonb not null default '{}'::jsonb;
 alter table public.user_episode_progress add column if not exists history jsonb not null default '[]'::jsonb;
 alter table public.user_episode_progress add column if not exists feedback text not null default '';
+alter table public.user_episode_progress add column if not exists story_mode text not null default 'pre';
+alter table public.user_episode_progress add column if not exists assessment jsonb not null default '{}'::jsonb;
 alter table public.user_episode_progress add column if not exists completed boolean not null default false;
 alter table public.user_episode_progress add column if not exists ending text;
 alter table public.user_episode_progress add column if not exists created_at timestamptz not null default now();

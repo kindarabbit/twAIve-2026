@@ -5,6 +5,18 @@ const episodes = [
     topic: "딥페이크 · 초상권",
     summary: "학교 축제 홍보 SNS에서 시작된 AI 얼굴 합성 사건.",
     meters: ["윤리", "관계", "확산"],
+    assessment: {
+      concept: "초상권과 동의",
+      preQuestion: "AI 얼굴 합성은 장난이라면 허락 없이 사용해도 괜찮을까요?",
+      postQuestion: "이 사건을 겪은 뒤, AI 얼굴 합성물을 보기 전에 가장 먼저 확인할 것은 무엇인가요?",
+      options: [
+        "재미있는지 먼저 본다",
+        "당사자의 동의와 피해 가능성을 확인한다",
+        "친구들이 하는지 분위기를 본다",
+      ],
+      principle: "얼굴과 목소리는 개인의 권리와 연결됩니다. AI로 만들 수 있어도 동의 없이 써도 된다는 뜻은 아닙니다.",
+      action: "합성 전 동의를 받고, 피해가 보이면 저장·공유를 멈춘 뒤 신고하거나 도움을 요청하세요.",
+    },
     start: "d1",
     scenes: {
       d1: {
@@ -107,11 +119,71 @@ const episodes = [
         ],
       },
       d3: {
-        chapter: "Ending",
-        title: "삭제된 게시물, 남은 캡처",
+        chapter: "Chapter 3",
+        title: "피해자가 직접 말하기 시작했다",
         text:
-          "사건은 선생님과 학생회에 전달된다. 이미 퍼진 캡처는 완전히 되돌리기 어렵지만, 당신의 선택은 피해 정도와 회복 가능성을 바꿨다.",
-        quote: "AI가 문제가 아니라, 사용하는 사람의 책임이 문제였다.",
+          "피해 학생은 합성 이미지 때문에 단체 채팅방을 나가고, 수업 시간에도 고개를 들지 못한다. 친구들은 '진짜도 아닌데 왜 저래?'라고 말하지만, 이미 당사자에게는 실제 피해가 되었다.",
+        quote: "가짜 이미지여도 상처는 진짜일 수 있다.",
+        choices: [
+          {
+            label: "피해 학생에게 먼저 사과하고 필요한 도움을 묻는다",
+            feedback:
+              "피해 회복은 게시물 삭제만으로 끝나지 않는다. 당사자의 감정과 요청을 먼저 듣는 태도가 중요하다.",
+            delta: { 윤리: 12, 관계: 8, 확산: -7 },
+            next: "d4",
+          },
+          {
+            label: "내가 만든 게 아니라며 거리를 둔다",
+            feedback:
+              "직접 제작자가 아니어도 방관과 공유는 피해 확산에 영향을 준다. 책임은 참여 정도를 돌아보는 데서 시작된다.",
+            delta: { 윤리: -7, 관계: -8, 확산: 5 },
+            next: "d4",
+          },
+          {
+            label: "친구들에게 더 이상 언급하지 말자고 제안한다",
+            feedback:
+              "확산을 멈추는 제안은 필요하다. 다만 피해자에게 필요한 조치와 신고까지 이어져야 회복에 가까워진다.",
+            delta: { 윤리: 7, 관계: 4, 확산: -9 },
+            next: "d4",
+          },
+        ],
+      },
+      d4: {
+        chapter: "Chapter 4",
+        title: "삭제 요청과 재발 방지",
+        text:
+          "학생회는 축제 계정에 올라온 합성물을 삭제하고, AI 이미지 사용 기준을 만들자고 한다. 이제 단순히 '하지 말자'가 아니라 어떤 규칙이 필요한지 정해야 한다.",
+        quote: "동의 없는 합성 금지, 출처 표시, 신고 절차. 규칙은 피해가 난 뒤에야 보인다.",
+        choices: [
+          {
+            label: "AI 이미지 사용 전 동의 확인 규칙을 만든다",
+            feedback:
+              "구체적인 기준은 다음 피해를 막는다. 교육적 기술 사용은 동의, 목적, 공개 범위를 함께 정해야 가능하다.",
+            delta: { 윤리: 13, 관계: 4, 확산: -8 },
+            next: "d5",
+          },
+          {
+            label: "이번 일만 조용히 넘기자고 한다",
+            feedback:
+              "조용한 마무리는 당장 편해 보여도 같은 일이 반복될 가능성을 남긴다. 재발 방지는 공동체의 책임이다.",
+            delta: { 윤리: -8, 관계: 1, 확산: 6 },
+            next: "d5",
+          },
+          {
+            label: "피해 사례를 익명으로 정리해 캠페인을 만든다",
+            feedback:
+              "당사자를 보호하면서 배울 점을 공유하면 공동체의 기준을 세울 수 있다. 공개 범위와 익명성이 핵심이다.",
+            delta: { 윤리: 10, 관계: 7, 확산: -5 },
+            next: "d5",
+          },
+        ],
+      },
+      d5: {
+        chapter: "Ending",
+        title: "삭제된 게시물, 남은 기준",
+        text:
+          "사건은 선생님과 학생회에 전달된다. 이미 퍼진 캡처는 완전히 되돌리기 어렵지만, 당신의 선택은 피해 정도와 회복 가능성, 그리고 다음 AI 사용 기준을 바꿨다.",
+        quote: "AI가 문제가 아니라, 사용하는 사람의 책임과 공동체의 기준이 문제였다.",
         end: true,
       },
     },
@@ -122,6 +194,18 @@ const episodes = [
     topic: "AI 허위정보 · 검증",
     summary: "학교 커뮤니티에 올라온 AI 생성 루머와 책임 있는 공유.",
     meters: ["책임", "검증", "확산"],
+    assessment: {
+      concept: "허위정보 검증",
+      preQuestion: "영상이나 사진이 있으면 인터넷 게시물을 사실로 믿어도 될까요?",
+      postQuestion: "AI 허위정보를 봤을 때 가장 책임 있는 첫 행동은 무엇인가요?",
+      options: [
+        "빠르게 공유해 많은 사람이 보게 한다",
+        "출처와 공식 확인 여부를 먼저 점검한다",
+        "댓글 반응이 많으면 사실로 판단한다",
+      ],
+      principle: "AI 시대에는 이미지, 음성, 영상도 조작될 수 있습니다. 사실 판단은 형식이 아니라 출처와 검증으로 해야 합니다.",
+      action: "공유 전 출처·날짜·공식 발표를 확인하고, 피해자가 생긴 정보는 정정과 신고로 확산을 줄이세요.",
+    },
     start: "r1",
     scenes: {
       r1: {
@@ -208,10 +292,40 @@ const episodes = [
         ],
       },
       r4: {
+        chapter: "Step 5",
+        title: "정정은 어떻게 해야 할까",
+        text:
+          "게시물이 AI로 만든 허위정보였다는 사실이 확인된다. 하지만 이미 캡처가 퍼져 당사자는 계속 해명을 요구받는다. 이제 잘못된 정보를 멈추는 방식이 중요해졌다.",
+        quote: "틀렸다는 걸 알았을 때 멈추는 것도 책임이다.",
+        choices: [
+          {
+            label: "처음 공유된 곳에 정정 글과 신고 링크를 올린다",
+            feedback:
+              "정정은 같은 경로에서 이루어질수록 효과가 크다. 피해자를 보호하려면 삭제 요청과 신고 절차도 함께 안내해야 한다.",
+            delta: { 책임: 13, 검증: 8, 확산: -12 },
+            next: "r5",
+          },
+          {
+            label: "내가 직접 쓴 글은 아니니까 가만히 있는다",
+            feedback:
+              "소극적인 태도는 루머가 계속 떠돌 공간을 남긴다. 공유했거나 봤다면 정정에도 참여할 수 있다.",
+            delta: { 책임: -7, 검증: -2, 확산: 7 },
+            next: "r5",
+          },
+          {
+            label: "친구들에게 확인 전 공유 금지 체크리스트를 만든다",
+            feedback:
+              "체크리스트는 다음 상황에서 행동을 바꾸는 교육 도구가 된다. 출처, 날짜, 공식 확인 여부를 포함하면 좋다.",
+            delta: { 책임: 10, 검증: 12, 확산: -7 },
+            next: "r5",
+          },
+        ],
+      },
+      r5: {
         chapter: "Ending",
         title: "공유 전 한 번 더",
         text:
-          "학생회는 AI 허위정보 예방 캠페인을 준비한다. 당신의 선택은 캠페인의 방향과 친구들의 태도를 바꿨다.",
+          "학생회는 AI 허위정보 예방 캠페인을 준비한다. 당신의 선택은 캠페인의 방향과 친구들의 태도를 바꿨고, 빠른 공유보다 정확한 확인이 더 중요하다는 기준을 남겼다.",
         quote: "AI 시대에 필요한 것은 빠른 판단이 아니라 올바른 검증이다.",
         end: true,
       },
@@ -223,6 +337,18 @@ const episodes = [
     topic: "AI 챗봇 · 정신건강",
     summary: "AI 챗봇에 기대는 친구를 현실의 도움과 연결하는 이야기.",
     meters: ["신뢰", "안정", "의존"],
+    assessment: {
+      concept: "AI 의존과 현실 도움",
+      preQuestion: "AI 챗봇이 위로를 잘해주면 친구나 상담 선생님을 대신해도 괜찮을까요?",
+      postQuestion: "친구가 AI에게만 기대는 모습을 봤을 때 가장 좋은 도움은 무엇인가요?",
+      options: [
+        "AI가 있으니 괜찮다고 둔다",
+        "판단하지 않고 현실의 대화와 상담으로 연결한다",
+        "챗봇을 당장 끊으라고 혼낸다",
+      ],
+      principle: "AI는 감정을 정리하는 도구가 될 수 있지만, 위험 신호를 발견하고 책임지는 사람은 아닙니다.",
+      action: "수면·관계·학교생활이 흔들리면 혼자 두지 말고 신뢰할 수 있는 어른이나 상담 자원과 연결하세요.",
+    },
     start: "c1",
     scenes: {
       c1: {
@@ -309,6 +435,36 @@ const episodes = [
         ],
       },
       c4: {
+        chapter: "Step 4",
+        title: "AI에게 맡길 수 없는 순간",
+        text:
+          "친구는 AI에게만 속마음을 털어놓는 게 편하다고 말한다. 하지만 잠을 줄이고, 학교 활동을 피하고, 상담 권유도 미루고 있다. 이제 AI 사용을 금지하기보다 안전한 경계를 함께 정해야 한다.",
+        quote: "도움이 되는 도구도, 혼자만의 세계가 되면 위험해질 수 있다.",
+        choices: [
+          {
+            label: "AI 사용 시간을 정하고 상담 선생님과 함께 이야기한다",
+            feedback:
+              "AI를 무조건 끊게 하기보다 현실의 도움과 균형을 잡는 방식이 안전하다. 지속적인 위험 신호는 전문적인 연결이 필요하다.",
+            delta: { 신뢰: 8, 안정: 13, 의존: -12 },
+            next: "c5",
+          },
+          {
+            label: "AI 앱을 삭제하라고 강하게 말한다",
+            feedback:
+              "의도는 보호일 수 있지만 통제처럼 느껴지면 친구가 더 숨을 수 있다. 안전한 대화와 도움 연결이 먼저다.",
+            delta: { 신뢰: -10, 안정: -4, 의존: 3 },
+            next: "c5",
+          },
+          {
+            label: "매일 짧게 안부를 묻고 함께할 약속을 만든다",
+            feedback:
+              "작은 현실 연결은 의존을 줄이는 힘이 된다. 단, 위험 신호가 계속되면 친구끼리만 해결하려 하지 않아야 한다.",
+            delta: { 신뢰: 12, 안정: 8, 의존: -7 },
+            next: "c5",
+          },
+        ],
+      },
+      c5: {
         chapter: "Ending",
         title: "혼자가 아니어도 괜찮아",
         text:
@@ -327,6 +483,9 @@ const state = {
   history: [],
   feedback: "",
   view: "story",
+  storyMode: "pre",
+  assessments: {},
+  progress: {},
   profile: null,
 };
 
@@ -428,6 +587,14 @@ function showAuthError(message) {
   els.loginError.textContent = message;
 }
 
+function supabaseConnectionMessage(error) {
+  const message = error?.message || String(error || "");
+  if (message.includes("Failed to fetch") || message.includes("fetch")) {
+    return "Supabase 서버에 연결하지 못했습니다. Supabase 프로젝트가 일시정지되었는지, Project URL이 맞는지 확인하세요.";
+  }
+  return message;
+}
+
 function showPasswordCheckMessage(message, type) {
   els.passwordCheckMessage.textContent = message;
   els.passwordCheckMessage.classList.toggle("is-success", type === "success");
@@ -452,9 +619,17 @@ async function loadSession() {
     return;
   }
 
-  const { data, error } = await supabaseClient.auth.getSession();
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabaseClient.auth.getSession());
+  } catch (requestError) {
+    showLogin(supabaseConnectionMessage(requestError));
+    return;
+  }
+
   if (error) {
-    showLogin(error.message);
+    showLogin(supabaseConnectionMessage(error));
     return;
   }
 
@@ -469,6 +644,7 @@ async function loadSession() {
       );
     }
     await loadProfile();
+    await loadAllProgress();
     await loadEpisodeProgress(state.episodeIndex);
     showApp();
     render();
@@ -483,10 +659,17 @@ async function login(username, password) {
     return;
   }
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: usernameToAuthEmail(username),
-    password,
-  });
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabaseClient.auth.signInWithPassword({
+      email: usernameToAuthEmail(username),
+      password,
+    }));
+  } catch (requestError) {
+    showAuthError(supabaseConnectionMessage(requestError));
+    return;
+  }
 
   if (error) {
     showAuthError("아이디 또는 비밀번호가 올바르지 않습니다.");
@@ -495,6 +678,7 @@ async function login(username, password) {
 
   currentUser = data.user;
   await loadProfile();
+  await loadAllProgress();
   await loadEpisodeProgress(state.episodeIndex);
   showApp();
   render();
@@ -506,11 +690,19 @@ async function loadProfile() {
     return null;
   }
 
-  const { data, error } = await supabaseClient
-    .from("profiles")
-    .select("username, auth_email, display_name, created_at")
-    .eq("id", currentUser.id)
-    .maybeSingle();
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabaseClient
+      .from("profiles")
+      .select("username, auth_email, display_name, created_at")
+      .eq("id", currentUser.id)
+      .maybeSingle());
+  } catch (requestError) {
+    showAuthError(supabaseConnectionMessage(requestError));
+    state.profile = null;
+    return null;
+  }
 
   if (error) {
     showAuthError(`프로필을 불러오지 못했습니다: ${error.message}`);
@@ -536,8 +728,15 @@ async function checkUsernameAvailability() {
     return false;
   }
 
-  const { data, error } = await supabaseClient
-    .rpc("is_username_available", { requested_username: username });
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabaseClient
+      .rpc("is_username_available", { requested_username: username }));
+  } catch (requestError) {
+    showAuthError(supabaseConnectionMessage(requestError));
+    return false;
+  }
 
   if (error) {
     showAuthError(`아이디 중복확인 오류: ${error.message}`);
@@ -609,16 +808,23 @@ async function signup(username, displayName, password, passwordConfirm) {
     return;
   }
 
-  const { data, error } = await supabaseClient.auth.signUp({
-    email: usernameToAuthEmail(username),
-    password,
-    options: {
-      data: {
-        username,
-        display_name: displayName,
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabaseClient.auth.signUp({
+      email: usernameToAuthEmail(username),
+      password,
+      options: {
+        data: {
+          username,
+          display_name: displayName,
+        },
       },
-    },
-  });
+    }));
+  } catch (requestError) {
+    showAuthError(supabaseConnectionMessage(requestError));
+    return;
+  }
 
   if (error) {
     showAuthError(error.message);
@@ -638,12 +844,18 @@ async function signup(username, displayName, password, passwordConfirm) {
 }
 
 async function saveProfile(user, username, displayName) {
-  const { error } = await supabaseClient.from("profiles").upsert({
-    id: user.id,
-    username,
-    auth_email: user.email,
-    display_name: displayName,
-  });
+  let error;
+  try {
+    ({ error } = await supabaseClient.from("profiles").upsert({
+      id: user.id,
+      username,
+      auth_email: user.email,
+      display_name: displayName,
+    }));
+  } catch (requestError) {
+    showAuthError(supabaseConnectionMessage(requestError));
+    return;
+  }
 
   if (error) {
     showAuthError("프로필 저장 중 오류가 발생했습니다. Supabase SQL 설정을 확인하세요.");
@@ -664,10 +876,17 @@ async function updateDisplayName(displayName) {
     return;
   }
 
-  const { error } = await supabaseClient
-    .from("profiles")
-    .update({ display_name: nextName })
-    .eq("id", currentUser.id);
+  let error;
+  try {
+    ({ error } = await supabaseClient
+      .from("profiles")
+      .update({ display_name: nextName })
+      .eq("id", currentUser.id));
+  } catch (requestError) {
+    state.feedback = supabaseConnectionMessage(requestError);
+    render();
+    return;
+  }
 
   if (error) {
     state.feedback = `프로필 수정 오류: ${error.message}`;
@@ -694,6 +913,7 @@ async function logout() {
   }
   currentUser = null;
   state.profile = null;
+  state.progress = {};
   showLogin();
 }
 
@@ -713,18 +933,115 @@ function resetScores(episode) {
   state.scores = Object.fromEntries(episode.meters.map((meter) => [meter, 50]));
 }
 
+function activeAssessmentResponse() {
+  const episodeId = activeEpisode().id;
+  if (!state.assessments[episodeId]) {
+    state.assessments[episodeId] = {};
+  }
+  return state.assessments[episodeId];
+}
+
+async function answerAssessment(type, answer) {
+  const response = activeAssessmentResponse();
+  response[type] = {
+    answer,
+    answeredAt: new Date().toISOString(),
+  };
+
+  state.storyMode = type === "pre" ? "story" : "report";
+  state.feedback =
+    type === "pre"
+      ? "사전 생각이 기록되었습니다. 이제 상황 속에서 선택해보세요."
+      : "사후 생각이 기록되었습니다. 결과 리포트를 확인해보세요.";
+
+  await saveEpisodeProgress();
+  render();
+}
+
+function assessmentChangeText(response) {
+  const preAnswer = response.pre?.answer;
+  const postAnswer = response.post?.answer;
+
+  if (!preAnswer && !postAnswer) {
+    return "아직 사전/사후 응답이 없습니다.";
+  }
+  if (!postAnswer) {
+    return `사전 응답: ${preAnswer}`;
+  }
+  if (preAnswer === postAnswer) {
+    return `사전·사후 응답이 "${postAnswer}"로 유지되었습니다.`;
+  }
+  return `사전에는 "${preAnswer}"라고 답했고, 사후에는 "${postAnswer}"로 바뀌었습니다.`;
+}
+
+function reportText(episode, response) {
+  const historyText = state.history.length
+    ? state.history.map((item, index) => `${index + 1}. ${item.choice}`).join("\n")
+    : "선택 기록이 없습니다.";
+
+  return [
+    `최종 윤리 점수: ${scoreAverage()}`,
+    `엔딩: ${endingName()}`,
+    `학습 개념: ${episode.assessment.concept}`,
+    "",
+    assessmentChangeText(response),
+    "",
+    "선택 흐름",
+    historyText,
+    "",
+    "기억할 원칙",
+    episode.assessment.principle,
+    "",
+    "현실 행동",
+    episode.assessment.action,
+  ].join("\n");
+}
+
+function progressSummaryText() {
+  const progressItems = episodes
+    .map((episode) => ({
+      episode,
+      progress: state.progress[episode.id],
+    }))
+    .filter((item) => item.progress);
+  const completedItems = progressItems.filter((item) => item.progress.completed);
+  const averageScore = progressItems.length
+    ? Math.round(
+        progressItems.reduce((sum, item) => sum + Number(item.progress.score || 0), 0) /
+          progressItems.length,
+      )
+    : 0;
+  const recentItem = progressItems
+    .slice()
+    .sort((a, b) => new Date(b.progress.updated_at || 0) - new Date(a.progress.updated_at || 0))[0];
+
+  return [
+    `완료한 에피소드: ${completedItems.length} / ${episodes.length}`,
+    `평균 윤리 점수: ${progressItems.length ? averageScore : "-"}`,
+    `최근 학습: ${recentItem ? recentItem.episode.title : "-"}`,
+    `최근 엔딩: ${recentItem?.progress.ending || "-"}`,
+  ].join("\n");
+}
+
 async function loadEpisodeProgress(index) {
   if (!supabaseClient || !currentUser) {
     return false;
   }
 
   const episode = episodes[index];
-  const { data, error } = await supabaseClient
-    .from("user_episode_progress")
-    .select("scene_id, scores, history, feedback")
-    .eq("user_id", currentUser.id)
-    .eq("episode_id", episode.id)
-    .maybeSingle();
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabaseClient
+      .from("user_episode_progress")
+      .select("scene_id, scores, history, feedback, story_mode, assessment")
+      .eq("user_id", currentUser.id)
+      .eq("episode_id", episode.id)
+      .maybeSingle());
+  } catch (requestError) {
+    state.feedback = supabaseConnectionMessage(requestError);
+    return false;
+  }
 
   if (error) {
     state.feedback = `기록 불러오기 오류: ${error.message}`;
@@ -744,7 +1061,35 @@ async function loadEpisodeProgress(index) {
   };
   state.history = Array.isArray(data.history) ? data.history : [];
   state.feedback = data.feedback || "";
+  state.storyMode = data.story_mode || "story";
+  state.assessments[episode.id] = data.assessment || {};
   return true;
+}
+
+async function loadAllProgress() {
+  if (!supabaseClient || !currentUser) {
+    state.progress = {};
+    return;
+  }
+
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabaseClient
+      .from("user_episode_progress")
+      .select("episode_id, score, completed, ending, updated_at")
+      .eq("user_id", currentUser.id));
+  } catch (requestError) {
+    state.feedback = supabaseConnectionMessage(requestError);
+    return;
+  }
+
+  if (error) {
+    state.feedback = `학습 성과 불러오기 오류: ${error.message}`;
+    return;
+  }
+
+  state.progress = Object.fromEntries((data || []).map((item) => [item.episode_id, item]));
 }
 
 async function saveEpisodeProgress() {
@@ -753,25 +1098,42 @@ async function saveEpisodeProgress() {
   }
 
   const scene = activeScene();
-  const { error } = await supabaseClient.from("user_episode_progress").upsert(
-    {
-      user_id: currentUser.id,
-      episode_id: activeEpisode().id,
-      scene_id: state.sceneId,
-      score: scoreAverage(),
-      scores: state.scores,
-      history: state.history,
-      feedback: state.feedback,
-      completed: Boolean(scene.end),
-      ending: scene.end ? endingName() : null,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id,episode_id" },
-  );
+  let error;
+  try {
+    ({ error } = await supabaseClient.from("user_episode_progress").upsert(
+      {
+        user_id: currentUser.id,
+        episode_id: activeEpisode().id,
+        scene_id: state.sceneId,
+        score: scoreAverage(),
+        scores: state.scores,
+        history: state.history,
+        feedback: state.feedback,
+        story_mode: state.storyMode,
+        assessment: state.assessments[activeEpisode().id] || {},
+        completed: Boolean(scene.end),
+        ending: scene.end ? endingName() : null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,episode_id" },
+    ));
+  } catch (requestError) {
+    state.feedback = supabaseConnectionMessage(requestError);
+    return;
+  }
 
   if (error) {
     state.feedback = `기록 저장 오류: ${error.message}`;
+    return;
   }
+
+  state.progress[activeEpisode().id] = {
+    episode_id: activeEpisode().id,
+    score: scoreAverage(),
+    completed: Boolean(scene.end),
+    ending: scene.end ? endingName() : null,
+    updated_at: new Date().toISOString(),
+  };
 }
 
 async function startEpisode(index, options = {}) {
@@ -780,6 +1142,10 @@ async function startEpisode(index, options = {}) {
   state.history = [];
   state.feedback = "";
   state.view = "story";
+  state.storyMode = "pre";
+  if (options.loadSaved === false) {
+    state.assessments[episodes[index].id] = {};
+  }
   resetScores(episodes[index]);
   if (options.loadSaved !== false) {
     await loadEpisodeProgress(index);
@@ -803,6 +1169,7 @@ async function applyChoice(choice) {
   state.feedback = choice.feedback;
   state.sceneId = choice.next;
   state.view = "story";
+  state.storyMode = activeScene().end ? "post" : "story";
   await saveEpisodeProgress();
   render();
 }
@@ -849,6 +1216,60 @@ function renderMeters() {
 
 function renderChoices(scene) {
   els.choices.innerHTML = "";
+
+  if (state.view === "story" && state.storyMode === "pre") {
+    activeEpisode().assessment.options.forEach((option, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `choice-button${index === 1 ? " is-primary" : ""}`;
+      button.innerHTML = `<strong>사전 답변 ${index + 1}</strong>${option}`;
+      button.addEventListener("click", () => answerAssessment("pre", option));
+      els.choices.appendChild(button);
+    });
+    return;
+  }
+
+  if (state.view === "story" && state.storyMode === "post") {
+    activeEpisode().assessment.options.forEach((option, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `choice-button${index === 1 ? " is-primary" : ""}`;
+      button.innerHTML = `<strong>사후 답변 ${index + 1}</strong>${option}`;
+      button.addEventListener("click", () => answerAssessment("post", option));
+      els.choices.appendChild(button);
+    });
+    return;
+  }
+
+  if (state.view === "story" && state.storyMode === "report") {
+    const replay = document.createElement("button");
+    replay.type = "button";
+    replay.className = "choice-button is-primary";
+    replay.innerHTML = `<strong>${endingName()}</strong>다시 플레이`;
+    replay.addEventListener("click", () =>
+      startEpisode(state.episodeIndex, { loadSaved: false, saveReset: true }),
+    );
+    els.choices.appendChild(replay);
+
+    const nextEpisode = document.createElement("button");
+    nextEpisode.type = "button";
+    nextEpisode.className = "choice-button";
+    nextEpisode.innerHTML = "<strong>다음 에피소드</strong>다른 주제로 이어서 학습";
+    nextEpisode.addEventListener("click", () => startEpisode((state.episodeIndex + 1) % episodes.length));
+    els.choices.appendChild(nextEpisode);
+
+    const learn = document.createElement("button");
+    learn.type = "button";
+    learn.className = "choice-button";
+    learn.innerHTML = "<strong>학습 정리</strong>핵심 개념 다시 보기";
+    learn.addEventListener("click", () => {
+      state.view = "learn";
+      syncNav();
+      render();
+    });
+    els.choices.appendChild(learn);
+    return;
+  }
 
   if (state.view === "profile") {
     const profile = state.profile || {};
@@ -954,9 +1375,38 @@ function render() {
       `아이디: ${profile.username || "-"}`,
       `이름: ${profile.display_name || "-"}`,
       `가입일: ${formatProfileDate(profile.created_at)}`,
+      "",
+      "학습 성과",
+      progressSummaryText(),
     ].join("\n");
-    els.quoteText.textContent = "이름은 언제든 수정할 수 있습니다. 아이디는 계정 식별용이라 고정됩니다.";
+    els.quoteText.textContent = "이름은 언제든 수정할 수 있고, 학습 성과는 에피소드를 진행할 때마다 저장됩니다.";
     els.feedbackBox.textContent = state.feedback || "프로필 정보를 확인하고 수정할 수 있습니다.";
+  } else if (state.view === "story" && state.storyMode === "pre") {
+    els.chapterLine.textContent = "Before";
+    els.sceneTitle.textContent = "사전 질문";
+    els.sceneText.textContent = activeEpisode().assessment.preQuestion;
+    els.quoteText.textContent = "지금 생각을 먼저 기록한 뒤, 이야기 속 선택을 진행합니다.";
+    els.feedbackBox.textContent = "정답을 맞히는 문제가 아니라, 내 생각이 어떻게 바뀌는지 보는 질문입니다.";
+  } else if (state.view === "story" && state.storyMode === "post") {
+    const response = activeAssessmentResponse();
+    els.chapterLine.textContent = "After";
+    els.sceneTitle.textContent = "사후 질문";
+    els.sceneText.textContent = [
+      activeScene().text,
+      "",
+      activeEpisode().assessment.postQuestion,
+    ].join("\n");
+    els.quoteText.textContent = activeScene().quote || activeEpisode().assessment.principle;
+    els.feedbackBox.textContent = response.pre?.answer
+      ? `사전 응답: ${response.pre.answer}`
+      : "사후 생각을 기록하면 결과 리포트가 열립니다.";
+  } else if (state.view === "story" && state.storyMode === "report") {
+    const response = activeAssessmentResponse();
+    els.chapterLine.textContent = "Report";
+    els.sceneTitle.textContent = "결과 리포트";
+    els.sceneText.textContent = reportText(activeEpisode(), response);
+    els.quoteText.textContent = activeEpisode().assessment.principle;
+    els.feedbackBox.textContent = "선택 기록과 사전·사후 응답이 저장되었습니다.";
   } else {
     els.chapterLine.textContent = scene.chapter;
     els.sceneTitle.textContent = scene.title;
