@@ -1309,10 +1309,10 @@ function progressSummaryText() {
     }))
     .filter((item) => item.progress);
   const completedItems = progressItems.filter((item) => item.progress.completed);
-  const averageScore = progressItems.length
+  const averageScore = completedItems.length
     ? Math.round(
-        progressItems.reduce((sum, item) => sum + Number(item.progress.score || 0), 0) /
-          progressItems.length,
+        completedItems.reduce((sum, item) => sum + Number(item.progress.score || 0), 0) /
+          completedItems.length,
       )
     : 0;
   const recentItem = progressItems
@@ -1321,11 +1321,27 @@ function progressSummaryText() {
 
   return [
     `완료한 에피소드: ${completedItems.length} / ${episodes.length}`,
-    `평균 윤리 점수: ${progressItems.length ? averageScore : "-"}`,
+    `평균 AI 윤리 감수성: ${completedItems.length ? `${averageScore}점` : "진단 전"}`,
     `최근 학습: ${recentItem ? recentItem.episode.title : "-"}`,
     `최근 엔딩: ${recentItem?.progress.ending || "-"}`,
     `종합 진단: ${overallDiagnosis(completedItems.length, averageScore)}`,
   ].join("\n");
+}
+
+function scoreBadgeHtml() {
+  const completedItems = episodes
+    .map((episode) => state.progress[episode.id])
+    .filter((progress) => progress?.completed);
+
+  if (!completedItems.length) {
+    return `<span class="score-caption">AI 윤리 감수성</span><strong class="score-value">진단 전</strong>`;
+  }
+
+  const averageScore = Math.round(
+    completedItems.reduce((sum, progress) => sum + Number(progress.score || 0), 0) /
+      completedItems.length,
+  );
+  return `<span class="score-caption">AI 윤리 감수성</span><strong class="score-value">${averageScore}점</strong>`;
 }
 
 function overallDiagnosis(completedCount, averageScore) {
@@ -1743,11 +1759,13 @@ function render() {
   if (state.view === "home") {
     els.topicLabel.textContent = "AI 윤리 학습";
     els.episodeTitle.textContent = "에피소드를 선택하세요";
-    els.episodeSummary.textContent = "사전 질문, 선택형 스토리, 사후 질문, 결과 리포트로 학습 흐름을 확인합니다.";
+    els.episodeSummary.textContent =
+      "에피소드를 끝까지 완료하면 나의 AI 윤리 감수성 점수가 기록됩니다.";
     els.chapterLine.textContent = "Main";
     els.sceneTitle.textContent = "오늘의 학습 주제";
     els.sceneText.textContent = "아래 5개의 에피소드 중 하나를 선택하면 해당 주제의 사전 질문부터 시작합니다.";
-    els.quoteText.textContent = "각 에피소드는 선택 기록과 결과 리포트가 저장됩니다.";
+    els.quoteText.textContent =
+      "사전 질문, 선택형 스토리, 사후 질문을 마치면 점수와 결과 리포트가 저장됩니다.";
     els.feedbackBox.textContent = progressSummaryText();
   } else if (state.view === "record") {
     els.chapterLine.textContent = "Record";
@@ -1816,7 +1834,7 @@ function render() {
       ? `${endingName()} · 선택 기록 ${state.history.length}개. ${state.feedback || "에피소드를 끝까지 진행했습니다."}`
       : state.feedback;
   }
-  els.scoreLabel.textContent = `윤리 ${scoreAverage()}`;
+  els.scoreLabel.innerHTML = scoreBadgeHtml();
   renderMeters();
   renderChoices(scene);
 }
