@@ -1175,3 +1175,216 @@ blockquote {
     grid-template-columns: 1fr;
   }
 }
+
+/* Home page and assessment screens */
+.episode-tabs[hidden] {
+  display: none;
+}
+
+.story-stage.is-home-stage {
+  grid-template-columns: 1fr;
+  min-height: auto;
+  background: #f7fbff;
+}
+
+.story-stage.is-home-stage .scene-art,
+.story-stage.is-home-stage .cast-panel {
+  display: none;
+}
+
+.story-stage.is-home-stage .dialogue-panel {
+  border: 0;
+  padding: 34px 42px;
+}
+
+.story-stage.is-home-stage .dialogue-panel h3 {
+  font-size: clamp(1.8rem, 3vw, 2.7rem);
+}
+
+.is-home-dock .choices {
+  grid-template-columns: 1fr;
+}
+
+.episode-list {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.episode-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px 18px;
+  min-height: 132px;
+  padding: 22px 24px;
+  border: 1px solid #cfe3ff;
+  border-radius: 20px;
+  color: var(--ink);
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(31, 96, 170, 0.08);
+}
+
+.episode-card:hover {
+  border-color: #7bb6ff;
+  background: #f7fbff;
+}
+
+.episode-card-index,
+.episode-card-topic,
+.episode-card-summary {
+  color: var(--muted);
+}
+
+.episode-card-index {
+  color: var(--blue);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.episode-card-title {
+  grid-column: 1;
+  color: var(--blue-strong);
+  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  font-weight: 900;
+}
+
+.episode-card-topic {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  justify-self: end;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--blue-strong);
+  background: #eef7ff;
+  font-size: 0.86rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.episode-card-summary {
+  grid-column: 1 / -1;
+  line-height: 1.55;
+}
+
+.episode-card-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #315c91;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.story-stage.is-assessment-stage {
+  grid-template-columns: minmax(260px, 32%) minmax(0, 1fr);
+}
+
+.story-stage.is-assessment-stage .dialogue-panel {
+  padding: 40px 46px;
+}
+
+.story-stage.is-assessment-stage .dialogue-panel h3 {
+  display: inline-grid;
+  width: fit-content;
+  margin: 0 0 18px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: var(--blue);
+  background: #eef7ff;
+  font-size: clamp(0.92rem, 1.3vw, 1.1rem);
+}
+
+.story-stage.is-assessment-stage .scene-text {
+  max-width: 760px;
+  padding: 26px 30px;
+  border: 1px solid #b9d8ff;
+  border-radius: 18px;
+  color: var(--blue-strong);
+  background: #ffffff;
+  font-size: clamp(1.45rem, 2.4vw, 2.25rem);
+  font-weight: 900;
+  line-height: 1.45;
+  box-shadow: 0 14px 30px rgba(31, 96, 170, 0.1);
+}
+
+blockquote.is-warning {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  border: 1px solid #ffd38a;
+  border-left: 6px solid #f59e0b;
+  border-radius: 14px;
+  color: #7a4b00;
+  background: #fff8e6;
+  font-weight: 800;
+}
+
+blockquote.is-warning::before {
+  content: "!";
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #f59e0b;
+  font-size: 0.86rem;
+}
+
+.assessment-answer {
+  display: grid;
+  gap: 10px;
+}
+
+.assessment-answer > span {
+  display: block;
+  font-size: clamp(1.02rem, 1.4vw, 1.22rem);
+  line-height: 1.55;
+}
+
+.answer-keyword {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  color: var(--blue-strong);
+  background: #ddebff;
+  font-weight: 900;
+}
+
+.assessment-answer.is-primary .answer-keyword {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 900px) {
+  .story-stage.is-assessment-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .story-stage.is-home-stage .dialogue-panel,
+  .story-stage.is-assessment-stage .dialogue-panel {
+    padding: 26px;
+  }
+
+  .episode-card {
+    grid-template-columns: 1fr;
+  }
+
+  .episode-card-topic {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
+    white-space: normal;
+  }
+
+  .episode-card-foot {
+    flex-direction: column;
+  }
+}

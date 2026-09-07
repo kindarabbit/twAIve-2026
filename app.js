@@ -782,7 +782,7 @@ const state = {
   scores: {},
   history: [],
   feedback: "",
-  view: "story",
+  view: "home",
   storyMode: "pre",
   assessments: {},
   progress: {},
@@ -821,6 +821,8 @@ const els = {
   userLabel: document.getElementById("userLabel"),
   logoutButton: document.getElementById("logoutButton"),
   episodeTabs: document.getElementById("episodeTabs"),
+  storyStage: document.querySelector(".story-stage"),
+  choiceDock: document.querySelector(".choice-dock"),
   scoreLabel: document.getElementById("scoreLabel"),
   topicLabel: document.getElementById("topicLabel"),
   episodeTitle: document.getElementById("episodeTitle"),
@@ -946,6 +948,7 @@ async function loadSession() {
     await loadProfile();
     await loadAllProgress();
     await loadEpisodeProgress(state.episodeIndex);
+    state.view = "home";
     showApp();
     render();
   } else {
@@ -980,6 +983,7 @@ async function login(username, password) {
   await loadProfile();
   await loadAllProgress();
   await loadEpisodeProgress(state.episodeIndex);
+  state.view = "home";
   showApp();
   render();
 }
@@ -1508,14 +1512,7 @@ function endingName() {
 
 function renderTabs() {
   els.episodeTabs.innerHTML = "";
-  episodes.forEach((episode, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `episode-tab${index === state.episodeIndex ? " is-active" : ""}`;
-    button.innerHTML = `<strong>${episode.title}</strong><span>${episode.topic}</span>`;
-    button.addEventListener("click", () => startEpisode(index));
-    els.episodeTabs.appendChild(button);
-  });
+  els.episodeTabs.hidden = true;
 }
 
 function renderMeters() {
@@ -1531,30 +1528,101 @@ function renderMeters() {
   });
 }
 
+function episodeProgressLabel(episode) {
+  const progress = state.progress[episode.id];
+  if (!progress) {
+    return "시작 전";
+  }
+  if (progress.completed) {
+    return `${progress.ending || "완료"} · ${progress.score || "-"}점`;
+  }
+  return `${progress.score || "-"}점 · 진행 기록 있음`;
+}
+
+function answerKeywordHtml(option) {
+  const keywords = [
+    "공식 확인",
+    "현실의 대화",
+    "필요한 권한",
+    "그대로 제출",
+    "사용 범위",
+    "빠르게 공유",
+    "댓글 반응",
+    "모든 권한",
+    "내 생각",
+    "친구들",
+    "선생님",
+    "결과물",
+    "상담",
+    "권한",
+    "확인",
+    "공유",
+    "출처",
+    "제출",
+    "피해",
+    "동의",
+    "AI",
+    "설정",
+  ];
+  let html = escapeHtml(option);
+  keywords.forEach((keyword) => {
+    html = html.replaceAll(
+      escapeHtml(keyword),
+      `<span class="answer-keyword">${escapeHtml(keyword)}</span>`,
+    );
+  });
+  return html;
+}
+
+function renderAssessmentOptions(type) {
+  activeEpisode().assessment.options.forEach((option, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `choice-button assessment-answer${index === 1 ? " is-primary" : ""}`;
+    button.innerHTML = `<strong>${type === "pre" ? "사전 답변" : "사후 답변"} ${index + 1}</strong><span>${answerKeywordHtml(option)}</span>`;
+    button.addEventListener("click", () => answerAssessment(type, option));
+    els.choices.appendChild(button);
+  });
+}
+
+function renderEpisodeList() {
+  const list = document.createElement("div");
+  list.className = "episode-list";
+  episodes.forEach((episode, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "episode-card";
+    button.innerHTML = `
+      <span class="episode-card-index">Episode ${index + 1}</span>
+      <span class="episode-card-title">${episode.title}</span>
+      <span class="episode-card-topic">${episode.topic}</span>
+      <span class="episode-card-summary">${episode.summary}</span>
+      <span class="episode-card-foot">
+        <span>${episode.assessment.concept}</span>
+        <span>${episodeProgressLabel(episode)}</span>
+      </span>
+    `;
+    button.addEventListener("click", () => startEpisode(index, { loadSaved: false }));
+    list.appendChild(button);
+  });
+  els.choices.appendChild(list);
+}
+
 function renderChoices(scene) {
   els.choices.innerHTML = "";
 
+  if (state.view === "home") {
+    renderEpisodeList();
+    return;
+  }
+
   if (state.view === "story" && state.storyMode === "pre") {
-    activeEpisode().assessment.options.forEach((option, index) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = `choice-button${index === 1 ? " is-primary" : ""}`;
-      button.innerHTML = `<strong>사전 답변 ${index + 1}</strong>${option}`;
-      button.addEventListener("click", () => answerAssessment("pre", option));
-      els.choices.appendChild(button);
-    });
+    renderAssessmentOptions("pre");
     return;
   }
 
   if (state.view === "story" && state.storyMode === "post") {
-    activeEpisode().assessment.options.forEach((option, index) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = `choice-button${index === 1 ? " is-primary" : ""}`;
-      button.innerHTML = `<strong>사후 답변 ${index + 1}</strong>${option}`;
-      button.addEventListener("click", () => answerAssessment("post", option));
-      els.choices.appendChild(button);
-    });
+    renderAssessmentOptions("post");
     return;
   }
 
@@ -1663,10 +1731,25 @@ function render() {
   const episode = activeEpisode();
   const scene = activeScene();
   renderTabs();
+  const isAssessment = state.view === "story" && ["pre", "post"].includes(state.storyMode);
+  els.storyStage.classList.toggle("is-home-stage", state.view === "home");
+  els.storyStage.classList.toggle("is-assessment-stage", isAssessment);
+  els.choiceDock.classList.toggle("is-home-dock", state.view === "home");
+  els.choiceDock.classList.toggle("is-assessment-dock", isAssessment);
+  els.quoteText.classList.toggle("is-warning", isAssessment);
   els.topicLabel.textContent = episode.topic;
   els.episodeTitle.textContent = episode.title;
   els.episodeSummary.textContent = episode.summary;
-  if (state.view === "record") {
+  if (state.view === "home") {
+    els.topicLabel.textContent = "AI 윤리 학습";
+    els.episodeTitle.textContent = "에피소드를 선택하세요";
+    els.episodeSummary.textContent = "사전 질문, 선택형 스토리, 사후 질문, 결과 리포트로 학습 흐름을 확인합니다.";
+    els.chapterLine.textContent = "Main";
+    els.sceneTitle.textContent = "오늘의 학습 주제";
+    els.sceneText.textContent = "아래 5개의 에피소드 중 하나를 선택하면 해당 주제의 사전 질문부터 시작합니다.";
+    els.quoteText.textContent = "각 에피소드는 선택 기록과 결과 리포트가 저장됩니다.";
+    els.feedbackBox.textContent = progressSummaryText();
+  } else if (state.view === "record") {
     els.chapterLine.textContent = "Record";
     els.sceneTitle.textContent = "선택 기록";
     els.sceneText.textContent = state.history.length
@@ -1740,7 +1823,8 @@ function render() {
 
 function syncNav() {
   document.querySelectorAll(".nav-item").forEach((item) => {
-    item.classList.toggle("is-active", item.dataset.view === state.view);
+    const isStorySection = item.dataset.view === "story" && ["home", "story"].includes(state.view);
+    item.classList.toggle("is-active", isStorySection || item.dataset.view === state.view);
   });
 }
 
@@ -1785,8 +1869,23 @@ function escapeAttribute(value) {
   });
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => {
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[character];
+  });
+}
+
 els.resetButton.addEventListener("click", () =>
-  startEpisode(state.episodeIndex, { loadSaved: false, saveReset: true }),
+  state.view === "home"
+    ? render()
+    : startEpisode(state.episodeIndex, { loadSaved: false, saveReset: true }),
 );
 els.logoutButton.addEventListener("click", logout);
 els.showLoginButton.addEventListener("click", () => setAuthMode("login"));
@@ -1815,7 +1914,7 @@ els.loginForm.addEventListener("submit", (event) => {
 
 document.querySelectorAll(".nav-item").forEach((button) => {
   button.addEventListener("click", () => {
-    state.view = button.dataset.view;
+    state.view = button.dataset.view === "story" ? "home" : button.dataset.view;
     syncNav();
     render();
   });
