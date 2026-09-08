@@ -1278,30 +1278,56 @@ function assessmentChangeText(response) {
   return `사전에는 "${preAnswer}"라고 답했고, 사후에는 "${postAnswer}"로 바뀌었습니다.`;
 }
 
-function reportText(episode, response) {
-  const historyText = state.history.length
-    ? state.history.map((item, index) => `${index + 1}. ${item.choice}`).join("\n")
-    : "선택 기록이 없습니다.";
+function assessmentChangeHtml(response) {
+  const preAnswer = response.pre?.answer;
+  const postAnswer = response.post?.answer;
 
-  return [
-    `최종 윤리 점수: ${scoreAverage()}`,
-    `엔딩: ${endingName()}`,
-    `학습 개념: ${episode.assessment.concept}`,
-    "",
-    assessmentChangeText(response),
-    "",
-    "선택 흐름",
-    historyText,
-    "",
-    "기억할 원칙",
-    episode.assessment.principle,
-    "",
-    "현실 행동",
-    episode.assessment.action,
-  ].join("\n");
+  if (!preAnswer && !postAnswer) {
+    return "아직 사전/사후 응답이 없습니다.";
+  }
+  if (!postAnswer) {
+    return `사전 응답: ${escapeHtml(preAnswer)}`;
+  }
+  if (preAnswer === postAnswer) {
+    return `사전과 사후 응답이 <strong>${escapeHtml(postAnswer)}</strong>로 유지되었습니다.`;
+  }
+  return `사전 <strong>${escapeHtml(preAnswer)}</strong>에서 사후 <strong>${escapeHtml(postAnswer)}</strong>로 바뀌었습니다.`;
 }
 
-function progressSummaryText() {
+function reportHtml(episode, response) {
+  return `
+    <div class="report-summary">
+      <article>
+        <span>최종 점수</span>
+        <strong>${scoreAverage()}점</strong>
+      </article>
+      <article>
+        <span>엔딩</span>
+        <strong>${endingName()}</strong>
+      </article>
+      <article>
+        <span>학습 개념</span>
+        <strong>${escapeHtml(episode.assessment.concept)}</strong>
+      </article>
+    </div>
+    <div class="insight-list">
+      <article>
+        <span>생각 변화</span>
+        <p>${assessmentChangeHtml(response)}</p>
+      </article>
+      <article>
+        <span>기억할 원칙</span>
+        <p>${escapeHtml(episode.assessment.principle)}</p>
+      </article>
+      <article>
+        <span>현실 행동</span>
+        <p>${escapeHtml(episode.assessment.action)}</p>
+      </article>
+    </div>
+  `;
+}
+
+function progressSnapshot() {
   const progressItems = episodes
     .map((episode) => ({
       episode,
@@ -1319,6 +1345,12 @@ function progressSummaryText() {
     .slice()
     .sort((a, b) => new Date(b.progress.updated_at || 0) - new Date(a.progress.updated_at || 0))[0];
 
+  return { progressItems, completedItems, averageScore, recentItem };
+}
+
+function progressSummaryText() {
+  const { completedItems, averageScore, recentItem } = progressSnapshot();
+
   return [
     `완료한 에피소드: ${completedItems.length} / ${episodes.length}`,
     `평균 AI 윤리 감수성: ${completedItems.length ? `${averageScore}점` : "진단 전"}`,
@@ -1326,6 +1358,29 @@ function progressSummaryText() {
     `최근 엔딩: ${recentItem?.progress.ending || "-"}`,
     `종합 진단: ${overallDiagnosis(completedItems.length, averageScore)}`,
   ].join("\n");
+}
+
+function progressSummaryHtml() {
+  const { completedItems, averageScore, recentItem } = progressSnapshot();
+  const diagnosis = overallDiagnosis(completedItems.length, averageScore);
+
+  return `
+    <div class="status-grid">
+      <article>
+        <span>완료</span>
+        <strong>${completedItems.length}/${episodes.length}</strong>
+      </article>
+      <article>
+        <span>감수성</span>
+        <strong>${completedItems.length ? `${averageScore}점` : "진단 전"}</strong>
+      </article>
+      <article>
+        <span>최근 학습</span>
+        <strong>${recentItem ? escapeHtml(recentItem.episode.title) : "없음"}</strong>
+      </article>
+    </div>
+    <p class="compact-note">${escapeHtml(diagnosis)}</p>
+  `;
 }
 
 function scoreBadgeHtml() {
@@ -1556,38 +1611,7 @@ function episodeProgressLabel(episode) {
 }
 
 function answerKeywordHtml(option) {
-  const keywords = [
-    "공식 확인",
-    "현실의 대화",
-    "필요한 권한",
-    "그대로 제출",
-    "사용 범위",
-    "빠르게 공유",
-    "댓글 반응",
-    "모든 권한",
-    "내 생각",
-    "친구들",
-    "선생님",
-    "결과물",
-    "상담",
-    "권한",
-    "확인",
-    "공유",
-    "출처",
-    "제출",
-    "피해",
-    "동의",
-    "AI",
-    "설정",
-  ];
-  let html = escapeHtml(option);
-  keywords.forEach((keyword) => {
-    html = html.replaceAll(
-      escapeHtml(keyword),
-      `<span class="answer-keyword">${escapeHtml(keyword)}</span>`,
-    );
-  });
-  return html;
+  return escapeHtml(option);
 }
 
 function renderAssessmentOptions(type) {
@@ -1595,7 +1619,7 @@ function renderAssessmentOptions(type) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `choice-button assessment-answer${index === 1 ? " is-primary" : ""}`;
-    button.innerHTML = `<strong>${type === "pre" ? "사전 답변" : "사후 답변"} ${index + 1}</strong><span>${answerKeywordHtml(option)}</span>`;
+    button.innerHTML = `<strong>${type === "pre" ? "사전" : "사후"} ${index + 1}</strong><span>${answerKeywordHtml(option)}</span>`;
     button.addEventListener("click", () => answerAssessment(type, option));
     els.choices.appendChild(button);
   });
@@ -1609,12 +1633,10 @@ function renderEpisodeList() {
     button.type = "button";
     button.className = "episode-card";
     button.innerHTML = `
-      <span class="episode-card-index">Episode ${index + 1}</span>
+      <span class="episode-card-index" data-step="${index + 1}">Episode ${index + 1}</span>
       <span class="episode-card-title">${episode.title}</span>
       <span class="episode-card-topic">${episode.topic}</span>
-      <span class="episode-card-summary">${episode.summary}</span>
       <span class="episode-card-foot">
-        <span>${episode.assessment.concept}</span>
         <span>${episodeProgressLabel(episode)}</span>
       </span>
     `;
@@ -1737,10 +1759,77 @@ function renderChoices(scene) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `choice-button${index === 0 ? " is-primary" : ""}`;
-    button.innerHTML = `<strong>선택 ${index + 1}</strong>${choice.label}`;
+    button.innerHTML = `<strong>${index + 1}</strong><span>${escapeHtml(choice.label)}</span>`;
     button.addEventListener("click", () => applyChoice(choice));
     els.choices.appendChild(button);
   });
+}
+
+function recordHtml() {
+  if (!state.history.length) {
+    return `
+      <div class="empty-state">
+        <strong>아직 기록이 없어요</strong>
+        <p>에피소드를 진행하면 선택한 흐름이 여기에 정리됩니다.</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="timeline-list">
+      ${state.history
+        .map(
+          (item, index) => `
+            <article>
+              <span>${index + 1}</span>
+              <div>
+                <strong>${escapeHtml(item.choice)}</strong>
+                <p>${escapeHtml(item.scene)}</p>
+              </div>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function learningHtml(id) {
+  return `
+    <div class="insight-list">
+      ${learningText(id)
+        .split("\n")
+        .filter(Boolean)
+        .map(
+          (line, index) => `
+            <article>
+              <span>Point ${index + 1}</span>
+              <p>${escapeHtml(line)}</p>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function profileHtml(profile) {
+  return `
+    <div class="profile-summary">
+      <article>
+        <span>아이디</span>
+        <strong>${escapeHtml(profile.username || "-")}</strong>
+      </article>
+      <article>
+        <span>이름</span>
+        <strong>${escapeHtml(profile.display_name || "-")}</strong>
+      </article>
+      <article>
+        <span>가입일</span>
+        <strong>${escapeHtml(formatProfileDate(profile.created_at))}</strong>
+      </article>
+    </div>
+  `;
 }
 
 function render() {
@@ -1748,72 +1837,71 @@ function render() {
   const scene = activeScene();
   renderTabs();
   const isAssessment = state.view === "story" && ["pre", "post"].includes(state.storyMode);
+  const isReport = state.view === "story" && state.storyMode === "report";
+  const isSupport = ["record", "learn", "profile"].includes(state.view);
   els.storyStage.classList.toggle("is-home-stage", state.view === "home");
   els.storyStage.classList.toggle("is-assessment-stage", isAssessment);
+  els.storyStage.classList.toggle("is-report-stage", isReport);
+  els.storyStage.classList.toggle("is-support-stage", isSupport);
   els.choiceDock.classList.toggle("is-home-dock", state.view === "home");
   els.choiceDock.classList.toggle("is-assessment-dock", isAssessment);
+  els.feedbackBox.classList.toggle("is-summary", state.view === "home" || state.view === "profile");
   els.quoteText.classList.toggle("is-warning", isAssessment);
   els.topicLabel.textContent = episode.topic;
   els.episodeTitle.textContent = episode.title;
   els.episodeSummary.textContent = episode.summary;
   if (state.view === "home") {
     els.topicLabel.textContent = "AI 윤리 학습";
-    els.episodeTitle.textContent = "에피소드를 선택하세요";
-    els.episodeSummary.textContent =
-      "에피소드를 끝까지 완료하면 나의 AI 윤리 감수성 점수가 기록됩니다.";
+    els.episodeTitle.textContent = "오늘의 선택";
+    els.episodeSummary.textContent = "짧은 상황을 읽고 하나씩 판단해보세요.";
     els.chapterLine.textContent = "Main";
-    els.sceneTitle.textContent = "오늘의 학습 주제";
-    els.sceneText.textContent = "아래 5개의 에피소드 중 하나를 선택하면 해당 주제의 사전 질문부터 시작합니다.";
-    els.quoteText.textContent =
-      "사전 질문, 선택형 스토리, 사후 질문을 마치면 점수와 결과 리포트가 저장됩니다.";
-    els.feedbackBox.textContent = progressSummaryText();
+    els.sceneTitle.textContent = "에피소드 선택";
+    els.sceneText.innerHTML = `
+      <div class="focus-card">
+        <span>5개 주제</span>
+        <strong>AI 윤리 상황을 골라 시작해요</strong>
+        <p>사전 질문, 스토리 선택, 결과 리포트 순서로 진행됩니다.</p>
+      </div>
+    `;
+    els.quoteText.textContent = "";
+    els.feedbackBox.innerHTML = progressSummaryHtml();
   } else if (state.view === "record") {
     els.chapterLine.textContent = "Record";
     els.sceneTitle.textContent = "선택 기록";
-    els.sceneText.textContent = state.history.length
-      ? state.history
-          .map((item, index) => `${index + 1}. ${item.scene} - ${item.choice}`)
-          .join("\n")
-      : "아직 선택 기록이 없습니다.";
+    els.sceneText.innerHTML = recordHtml();
     els.quoteText.textContent = state.history.length
       ? state.history[state.history.length - 1].feedback
       : "선택을 진행하면 판단 이유가 이곳에 쌓입니다.";
-    els.feedbackBox.textContent = `현재 예상 엔딩: ${endingName()}`;
+    els.feedbackBox.textContent = state.history.length ? `현재 흐름: ${endingName()}` : "";
   } else if (state.view === "learn") {
     els.chapterLine.textContent = "Learning";
     els.sceneTitle.textContent = "핵심 개념";
-    els.sceneText.textContent = learningText(episode.id);
-    els.quoteText.textContent = "정답을 외우는 것보다, 선택 전후의 책임을 이해하는 것이 목표입니다.";
+    els.sceneText.innerHTML = learningHtml(episode.id);
+    els.quoteText.textContent = "";
     els.feedbackBox.textContent = episode.topic;
   } else if (state.view === "profile") {
     const profile = state.profile || {};
     els.chapterLine.textContent = "My Page";
-    els.sceneTitle.textContent = "개인정보";
-    els.sceneText.textContent = [
-      `아이디: ${profile.username || "-"}`,
-      `이름: ${profile.display_name || "-"}`,
-      `가입일: ${formatProfileDate(profile.created_at)}`,
-      "",
-      "학습 성과",
-      progressSummaryText(),
-    ].join("\n");
-    els.quoteText.textContent = "이름은 언제든 수정할 수 있고, 학습 성과는 에피소드를 진행할 때마다 저장됩니다.";
-    els.feedbackBox.textContent = state.feedback || "프로필 정보를 확인하고 수정할 수 있습니다.";
+    els.sceneTitle.textContent = "마이페이지";
+    els.sceneText.innerHTML = profileHtml(profile);
+    els.quoteText.textContent = "";
+    els.feedbackBox.innerHTML = state.feedback
+      ? escapeHtml(state.feedback)
+      : progressSummaryHtml();
   } else if (state.view === "story" && state.storyMode === "pre") {
     els.chapterLine.textContent = "Before";
     els.sceneTitle.textContent = "사전 질문";
     els.sceneText.textContent = activeEpisode().assessment.preQuestion;
-    els.quoteText.textContent = "지금 생각을 먼저 기록한 뒤, 이야기 속 선택을 진행합니다.";
-    els.feedbackBox.textContent = "정답을 맞히는 문제가 아니라, 내 생각이 어떻게 바뀌는지 보는 질문입니다.";
+    els.quoteText.textContent = "먼저 생각을 기록한 뒤 스토리가 시작됩니다.";
+    els.feedbackBox.textContent = "";
   } else if (state.view === "story" && state.storyMode === "post") {
     const response = activeAssessmentResponse();
     els.chapterLine.textContent = "After";
     els.sceneTitle.textContent = "사후 질문";
-    els.sceneText.textContent = [
-      activeScene().text,
-      "",
-      activeEpisode().assessment.postQuestion,
-    ].join("\n");
+    els.sceneText.innerHTML = `
+      <p class="ending-brief">${escapeHtml(activeScene().text)}</p>
+      <strong class="followup-question">${escapeHtml(activeEpisode().assessment.postQuestion)}</strong>
+    `;
     els.quoteText.textContent = activeScene().quote || activeEpisode().assessment.principle;
     els.feedbackBox.textContent = response.pre?.answer
       ? `사전 응답: ${response.pre.answer}`
@@ -1822,7 +1910,7 @@ function render() {
     const response = activeAssessmentResponse();
     els.chapterLine.textContent = "Report";
     els.sceneTitle.textContent = "결과 리포트";
-    els.sceneText.textContent = reportText(activeEpisode(), response);
+    els.sceneText.innerHTML = reportHtml(activeEpisode(), response);
     els.quoteText.textContent = activeEpisode().assessment.principle;
     els.feedbackBox.textContent = "선택 기록과 사전·사후 응답이 저장되었습니다.";
   } else {
