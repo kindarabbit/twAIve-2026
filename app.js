@@ -822,7 +822,6 @@ const els = {
   logoutButton: document.getElementById("logoutButton"),
   episodeTabs: document.getElementById("episodeTabs"),
   storyStage: document.querySelector(".story-stage"),
-  sceneVisual: document.getElementById("sceneVisual"),
   choiceDock: document.querySelector(".choice-dock"),
   scoreLabel: document.getElementById("scoreLabel"),
   topicLabel: document.getElementById("topicLabel"),
@@ -1619,7 +1618,7 @@ function renderAssessmentOptions(type) {
   activeEpisode().assessment.options.forEach((option, index) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "choice-button assessment-answer";
+    button.className = `choice-button assessment-answer${index === 1 ? " is-primary" : ""}`;
     button.innerHTML = `<strong>${type === "pre" ? "사전" : "사후"} ${index + 1}</strong><span>${answerKeywordHtml(option)}</span>`;
     button.addEventListener("click", () => answerAssessment(type, option));
     els.choices.appendChild(button);
@@ -1759,60 +1758,11 @@ function renderChoices(scene) {
   scene.choices.forEach((choice, index) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "choice-button";
+    button.className = `choice-button${index === 0 ? " is-primary" : ""}`;
     button.innerHTML = `<strong>${index + 1}</strong><span>${escapeHtml(choice.label)}</span>`;
     button.addEventListener("click", () => applyChoice(choice));
     els.choices.appendChild(button);
   });
-}
-
-function sceneVisualMeta() {
-  const sceneId = state.sceneId;
-  const episodeId = activeEpisode().id;
-  const base = {
-    deepfake: { type: "camera", label: "사진 합성" },
-    rumor: { type: "search", label: "정보 확인" },
-    chatbot: { type: "chat", label: "대화 연결" },
-    assignment: { type: "document", label: "과제 작성" },
-    privacy: { type: "shield", label: "권한 설정" },
-  };
-  const byScene = {
-    d2a: { type: "share", label: "확산" },
-    d2c: { type: "gallery", label: "합성 이미지" },
-    d3: { type: "support", label: "피해 회복" },
-    d4: { type: "rule", label: "사용 기준" },
-    r1: { type: "post", label: "익명 게시물" },
-    r2: { type: "search", label: "영상 검증" },
-    r3: { type: "alert", label: "피해 발생" },
-    r4: { type: "correction", label: "정정" },
-    c1: { type: "chat", label: "AI 대화" },
-    c3: { type: "support", label: "상담 연결" },
-    c4: { type: "boundary", label: "사용 경계" },
-    a1: { type: "document", label: "AI 초안" },
-    a2: { type: "cite", label: "사용 범위" },
-    a3: { type: "search", label: "근거 확인" },
-    a4: { type: "presentation", label: "발표" },
-    p1: { type: "phone", label: "맞춤 추천" },
-    p2: { type: "privacy", label: "관심사 노출" },
-    p3: { type: "consent", label: "동의 확인" },
-    p4: { type: "settings", label: "데이터 관리" },
-  };
-
-  return byScene[sceneId] || base[episodeId] || { type: "camera", label: "상황" };
-}
-
-function renderSceneVisual() {
-  const meta = sceneVisualMeta();
-  els.sceneVisual.className = `scene-visual visual-${meta.type}`;
-  els.sceneVisual.innerHTML = `
-    <div class="visual-object">
-      <span class="visual-screen"></span>
-      <span class="visual-bubble one"></span>
-      <span class="visual-bubble two"></span>
-      <span class="visual-mark"></span>
-    </div>
-    <p>${escapeHtml(meta.label)}</p>
-  `;
 }
 
 function recordHtml() {
@@ -1888,16 +1838,13 @@ function render() {
   renderTabs();
   const isAssessment = state.view === "story" && ["pre", "post"].includes(state.storyMode);
   const isReport = state.view === "story" && state.storyMode === "report";
-  const isPlayableStory = state.view === "story" && state.storyMode === "story";
   const isSupport = ["record", "learn", "profile"].includes(state.view);
-  renderSceneVisual();
   els.storyStage.classList.toggle("is-home-stage", state.view === "home");
   els.storyStage.classList.toggle("is-assessment-stage", isAssessment);
   els.storyStage.classList.toggle("is-report-stage", isReport);
   els.storyStage.classList.toggle("is-support-stage", isSupport);
   els.choiceDock.classList.toggle("is-home-dock", state.view === "home");
   els.choiceDock.classList.toggle("is-assessment-dock", isAssessment);
-  els.choiceDock.classList.toggle("is-story-dock", isPlayableStory);
   els.feedbackBox.classList.toggle("is-summary", state.view === "home" || state.view === "profile");
   els.quoteText.classList.toggle("is-warning", isAssessment);
   els.topicLabel.textContent = episode.topic;
