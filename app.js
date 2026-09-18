@@ -1310,6 +1310,7 @@ function reportHtml(episode, response) {
         <strong>${escapeHtml(episode.assessment.concept)}</strong>
       </article>
     </div>
+    ${scoreBreakdownHtml()}
     <div class="insight-list">
       <article>
         <span>생각 변화</span>
@@ -1324,6 +1325,52 @@ function reportHtml(episode, response) {
         <p>${escapeHtml(episode.assessment.action)}</p>
       </article>
     </div>
+  `;
+}
+
+function formatDelta(value) {
+  if (value > 0) {
+    return `+${value}`;
+  }
+  return String(value);
+}
+
+function scoreBreakdownHtml() {
+  const inverseMeters = new Set(["확산", "의존"]);
+  const items = activeEpisode().meters.map((name) => {
+    const value = state.scores[name] ?? 50;
+    const delta = value - 50;
+    const reflectedValue = inverseMeters.has(name) ? 100 - value : value;
+    return { name, value, delta, reflectedValue, isInverse: inverseMeters.has(name) };
+  });
+  const formula = items.map((item) => item.reflectedValue).join(" + ");
+  const inverseNote = items
+    .filter((item) => item.isInverse)
+    .map((item) => `${item.name} ${item.value}점은 낮을수록 좋아서 ${item.reflectedValue}점으로 반영`)
+    .join(" · ");
+
+  return `
+    <section class="score-breakdown" aria-label="점수 계산 방식">
+      <div class="section-title">
+        <span>점수 계산</span>
+        <strong>선택에 따른 변화</strong>
+      </div>
+      <div class="score-delta-list">
+        ${items
+          .map(
+            (item) => `
+              <article>
+                <span>${escapeHtml(item.name)}</span>
+                <strong class="${item.delta >= 0 ? "is-plus" : "is-minus"}">${formatDelta(item.delta)}</strong>
+                <p>기본 50 → 최종 ${item.value}</p>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+      <p class="score-formula">(${formula}) ÷ ${items.length} = ${scoreAverage()}점</p>
+      ${inverseNote ? `<p class="score-note">${escapeHtml(inverseNote)}</p>` : ""}
+    </section>
   `;
 }
 

@@ -1,0 +1,177 @@
+:root {
+  color-scheme: light;
+  --ink: #152033;
+  --muted: #5b6d84;
+  --line: #d7e3f1;
+  --blue: #075fd8;
+  --blue-strong: #00439e;
+  --blue-soft: #eef6ff;
+  --paper: #ffffff;
+  --amber: #f4b342;
+}
+
+@font-face {
+  font-family: "GmarketSans";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff")
+    format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #eef5ff;
+  font-family:
+    "GmarketSans", "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo",
+    "Malgun Gothic", system-ui, sans-serif;
+}
+
+a {
+  color: var(--blue-strong);
+  text-underline-offset: 3px;
+}
+
+a:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.legal-shell {
+  width: min(820px, calc(100% - 32px));
+  margin: 32px auto;
+  border: 1px solid #c9d9eb;
+  background: var(--paper);
+}
+
+.legal-header {
+  padding: clamp(28px, 6vw, 54px);
+  color: #ffffff;
+  background: var(--blue-strong);
+}
+
+.legal-header p,
+.legal-header h1 {
+  margin: 0;
+}
+
+.legal-header p {
+  margin-bottom: 10px;
+  color: #bfdcff;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.legal-header h1 {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1.1;
+}
+
+.legal-content {
+  padding: clamp(24px, 6vw, 52px);
+}
+
+.draft-notice {
+  margin: 0 0 32px;
+  padding: 14px 16px;
+  border-left: 5px solid var(--amber);
+  color: #654300;
+  background: #fff8e7;
+  line-height: 1.65;
+}
+
+.legal-content section + section {
+  margin-top: 34px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.legal-content h2 {
+  margin: 0 0 12px;
+  color: var(--blue-strong);
+  font-size: 1.18rem;
+}
+
+.legal-content p,
+.legal-content li,
+.legal-content td,
+.legal-content th {
+  line-height: 1.75;
+}
+
+.legal-content p {
+  margin: 0;
+  color: #35475f;
+}
+
+.legal-content ul {
+  margin: 10px 0 0;
+  padding-left: 1.2rem;
+}
+
+.legal-content li + li {
+  margin-top: 7px;
+}
+
+.needs-input {
+  color: #8b4f00;
+  font-weight: 900;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 14px;
+  border: 1px solid var(--line);
+}
+
+table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: var(--blue-strong);
+  background: var(--blue-soft);
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+.legal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px clamp(24px, 6vw, 52px);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 560px) {
+  .legal-shell {
+    width: 100%;
+    margin: 0;
+    border: 0;
+  }
+
+  .legal-content section + section {
+    margin-top: 28px;
+    padding-top: 24px;
+  }
+}

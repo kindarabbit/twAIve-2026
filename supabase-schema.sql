@@ -31,7 +31,7 @@ end $$;
 alter table public.profiles enable row level security;
 
 grant usage on schema public to anon, authenticated;
-grant select on public.profiles to anon;
+revoke select on public.profiles from anon;
 grant select, insert, update on public.profiles to authenticated;
 
 create or replace function public.is_username_available(requested_username text)
@@ -59,12 +59,6 @@ on public.profiles
 for select
 to authenticated
 using (auth.uid() = id);
-
-create policy "Anyone can check usernames"
-on public.profiles
-for select
-to anon
-using (true);
 
 create policy "Users can create their own profile"
 on public.profiles
