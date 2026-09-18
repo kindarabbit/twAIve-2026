@@ -2159,35 +2159,30 @@ blockquote.is-warning {
 .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .scene-art {
   inset: 0 0 auto;
   width: 100%;
-  height: clamp(158px, 18vw, 210px);
+  height: clamp(126px, 12vw, 152px);
+  background: linear-gradient(135deg, #eef7ff 0%, #dbeafe 55%, #e8f4ff 100%);
 }
 
 .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .scene-art img {
-  width: 100%;
-  height: 100%;
-  object-position: center 38%;
-  filter: saturate(0.92) brightness(1.02);
-  transform: none;
+  display: none;
 }
 
 .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .scene-shade {
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.18);
+  display: none;
 }
 
 .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel {
-  min-height: clamp(158px, 18vw, 210px);
+  min-height: clamp(126px, 12vw, 152px);
   display: grid;
   grid-template-columns: minmax(240px, 330px) minmax(0, 1fr);
   grid-template-rows: auto auto;
   align-content: center;
   gap: 7px 28px;
   margin: 0;
-  padding: 28px 36px;
+  padding: 20px 32px;
   border: 0;
   border-bottom: 1px solid #d9e8fb;
-  background: rgba(255, 255, 255, 0.78);
+  background: transparent;
   backdrop-filter: none;
 }
 
@@ -2241,7 +2236,7 @@ blockquote.is-warning {
   grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   column-gap: 10px;
-  padding: clamp(28px, 4vw, 46px);
+  padding: 26px 34px 30px;
 }
 
 .story-stage.is-assessment-stage .chapter-line {
@@ -2259,8 +2254,8 @@ blockquote.is-warning {
   grid-column: 1 / -1;
   width: 100%;
   max-width: none;
-  margin-top: 24px;
-  padding: 18px 0 4px;
+  margin-top: 14px;
+  padding: 10px 0 2px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -2282,16 +2277,16 @@ blockquote.is-warning {
 @media (max-width: 900px) {
   .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .scene-art,
   .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel {
-    height: 148px;
-    min-height: 148px;
+    height: 118px;
+    min-height: 118px;
   }
 
   .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
     gap: 5px;
-    padding: 20px 22px;
-    background: rgba(255, 255, 255, 0.82);
+    padding: 16px 20px;
+    background: transparent;
   }
 
   .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel .eyebrow,
@@ -2309,12 +2304,12 @@ blockquote.is-warning {
 
   .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .dialogue-panel,
   .story-stage.is-assessment-stage .dialogue-panel {
-    padding: 24px 20px;
+    padding: 20px 18px 24px;
   }
 
   .story-stage.is-assessment-stage .scene-text {
-    margin-top: 18px;
-    padding: 14px 0 2px;
+    margin-top: 12px;
+    padding: 8px 0 2px;
     font-size: clamp(1.25rem, 5vw, 1.7rem);
   }
 
