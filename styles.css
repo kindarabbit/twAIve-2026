@@ -2179,10 +2179,10 @@ blockquote.is-warning {
 .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel {
   min-height: clamp(158px, 18vw, 210px);
   display: grid;
-  grid-template-columns: minmax(220px, 0.75fr) minmax(0, 1.25fr);
+  grid-template-columns: minmax(240px, 330px) minmax(0, 1fr);
   grid-template-rows: auto auto;
   align-content: center;
-  gap: 7px 36px;
+  gap: 7px 28px;
   margin: 0;
   padding: 28px 36px;
   border: 0;
@@ -2237,12 +2237,46 @@ blockquote.is-warning {
 }
 
 .story-stage.is-assessment-stage .dialogue-panel {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
   padding: clamp(28px, 4vw, 46px);
 }
 
+.story-stage.is-assessment-stage .chapter-line {
+  grid-column: 1;
+  margin: 0;
+}
+
+.story-stage.is-assessment-stage .dialogue-panel h3 {
+  grid-column: 2;
+  width: fit-content;
+  margin: 0;
+}
+
 .story-stage.is-assessment-stage .scene-text {
+  grid-column: 1 / -1;
   width: 100%;
   max-width: none;
+  margin-top: 24px;
+  padding: 18px 0 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.story-stage.is-assessment-stage .dialogue-panel blockquote {
+  grid-column: 1 / -1;
+}
+
+.story-stage.is-assessment-stage .followup-question {
+  margin-top: 24px;
+  padding: 24px 0 0;
+  border: 0;
+  border-top: 1px solid #d9e8fb;
+  border-radius: 0;
+  background: transparent;
 }
 
 @media (max-width: 900px) {
@@ -2279,7 +2313,13 @@ blockquote.is-warning {
   }
 
   .story-stage.is-assessment-stage .scene-text {
-    padding: 20px;
+    margin-top: 18px;
+    padding: 14px 0 2px;
     font-size: clamp(1.25rem, 5vw, 1.7rem);
+  }
+
+  .story-stage.is-assessment-stage .followup-question {
+    margin-top: 20px;
+    padding-top: 20px;
   }
 }
