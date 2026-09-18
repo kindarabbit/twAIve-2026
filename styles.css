@@ -1950,10 +1950,10 @@ blockquote {
 }
 
 .preview-header h2 {
-  max-width: 9em;
-  font-size: clamp(2.1rem, 4.2vw, 3.8rem);
-  line-height: 1.06;
-  word-break: keep-all;
+  max-width: none;
+  font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .preview-header > span {
@@ -2100,7 +2100,7 @@ blockquote.is-warning {
   }
 
   .preview-header h2 {
-    font-size: clamp(2rem, 9vw, 3rem);
+    font-size: clamp(1.6rem, 5.8vw, 2.1rem);
   }
 
   .auth-shell .login-card {
@@ -2127,7 +2127,7 @@ blockquote.is-warning {
   }
 
   .preview-header h2 {
-    font-size: 1.85rem;
+    font-size: clamp(1.25rem, 6.2vw, 1.55rem);
   }
 
   .preview-flow section {
