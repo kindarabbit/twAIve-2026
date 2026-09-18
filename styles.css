@@ -2148,3 +2148,138 @@ blockquote.is-warning {
     padding: 24px 20px;
   }
 }
+
+/* Horizontal episode header keeps the story question in the main reading flow. */
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  min-height: 0;
+}
+
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .scene-art {
+  inset: 0 0 auto;
+  width: 100%;
+  height: clamp(158px, 18vw, 210px);
+}
+
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .scene-art img {
+  width: 100%;
+  height: 100%;
+  object-position: center 38%;
+  filter: saturate(0.92) brightness(1.02);
+  transform: none;
+}
+
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .scene-shade {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel {
+  min-height: clamp(158px, 18vw, 210px);
+  display: grid;
+  grid-template-columns: minmax(220px, 0.75fr) minmax(0, 1.25fr);
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 7px 36px;
+  margin: 0;
+  padding: 28px 36px;
+  border: 0;
+  border-bottom: 1px solid #d9e8fb;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: none;
+}
+
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel .eyebrow {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  margin: 0;
+}
+
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel h2 {
+  grid-column: 1;
+  grid-row: 2;
+  max-width: none;
+  margin: 0;
+  font-size: clamp(1.55rem, 2.4vw, 2.35rem);
+  word-break: keep-all;
+}
+
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel p:not(.eyebrow) {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  max-width: 42rem;
+  color: #24476d;
+  font-size: clamp(0.96rem, 1.25vw, 1.08rem);
+  line-height: 1.65;
+}
+
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .dialogue-panel {
+  width: 100%;
+  margin: 0;
+  padding: clamp(28px, 4vw, 46px);
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .dialogue-panel h3,
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .scene-text,
+.story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) blockquote {
+  max-width: none;
+}
+
+.story-stage.is-assessment-stage {
+  grid-template-columns: 1fr;
+}
+
+.story-stage.is-assessment-stage .dialogue-panel {
+  padding: clamp(28px, 4vw, 46px);
+}
+
+.story-stage.is-assessment-stage .scene-text {
+  width: 100%;
+  max-width: none;
+}
+
+@media (max-width: 900px) {
+  .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .scene-art,
+  .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel {
+    height: 148px;
+    min-height: 148px;
+  }
+
+  .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 5px;
+    padding: 20px 22px;
+    background: rgba(255, 255, 255, 0.82);
+  }
+
+  .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel .eyebrow,
+  .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel h2 {
+    grid-column: 1;
+  }
+
+  .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel p:not(.eyebrow) {
+    display: none;
+  }
+
+  .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .cast-panel h2 {
+    font-size: clamp(1.45rem, 6vw, 1.9rem);
+  }
+
+  .story-stage:not(.is-home-stage):not(.is-support-stage):not(.is-report-stage) .dialogue-panel,
+  .story-stage.is-assessment-stage .dialogue-panel {
+    padding: 24px 20px;
+  }
+
+  .story-stage.is-assessment-stage .scene-text {
+    padding: 20px;
+    font-size: clamp(1.25rem, 5vw, 1.7rem);
+  }
+}
