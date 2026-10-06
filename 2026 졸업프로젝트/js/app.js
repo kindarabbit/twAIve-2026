@@ -114,11 +114,11 @@ const DECISION_REASONS = [
 const DECISION_REASON_CODES = new Set(DECISION_REASONS.map((reason) => reason.code));
 const decisionReasonCache = new Map();
 const EPISODE_VISUALS = Object.freeze({
-  deepfake: "../assets/episodes/episode-deepfake.png",
-  rumor: "../assets/episodes/episode-rumor.png",
-  chatbot: "../assets/episodes/episode-chatbot.png",
-  assignment: "../assets/episodes/episode-assignment.png",
-  privacy: "../assets/episodes/episode-privacy.png",
+  deepfake: "assets/episodes/episode-deepfake.png",
+  rumor: "assets/episodes/episode-rumor.png",
+  chatbot: "assets/episodes/episode-chatbot.png",
+  assignment: "assets/episodes/episode-assignment.png",
+  privacy: "assets/episodes/episode-privacy.png",
 });
 const EPISODE_INTRO_DURATION = 1900;
 let episodeIntroTimer = null;
@@ -2065,7 +2065,12 @@ function aiCoachHtml() {
             maxlength="240"
             placeholder="예: 왜 투명성 점수가 낮게 나왔나요?"
           />
-          <button id="aiExplainButton" type="submit">AI 설명 받기</button>
+          <button
+            id="aiExplainButton"
+            type="submit"
+            aria-label="AI 설명 받기"
+            title="AI 설명 받기"
+          ></button>
         </div>
         <div class="ai-question-suggestions" aria-labelledby="aiSuggestionLabel">
           <span id="aiSuggestionLabel">추천 질문</span>
@@ -2217,7 +2222,8 @@ async function requestAiExplanation(event) {
   suggestionButtons.forEach((suggestionButton) => {
     suggestionButton.disabled = true;
   });
-  button.textContent = "분석 중...";
+  button.setAttribute("aria-label", "분석 중");
+  button.setAttribute("title", "분석 중");
   output.hidden = false;
   output.classList.remove("is-error");
   output.setAttribute("aria-busy", "true");
@@ -2256,7 +2262,8 @@ async function requestAiExplanation(event) {
     suggestionButtons.forEach((suggestionButton) => {
       suggestionButton.disabled = false;
     });
-    button.textContent = "AI 설명 받기";
+    button.setAttribute("aria-label", "AI 설명 받기");
+    button.setAttribute("title", "AI 설명 받기");
   }
 }
 
