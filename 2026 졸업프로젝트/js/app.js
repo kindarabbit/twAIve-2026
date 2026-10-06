@@ -113,12 +113,18 @@ const DECISION_REASONS = [
 
 const DECISION_REASON_CODES = new Set(DECISION_REASONS.map((reason) => reason.code));
 const decisionReasonCache = new Map();
+const APP_ROOT_URL =
+  typeof URL === "function" && typeof document !== "undefined"
+    ? new URL("../", document.currentScript?.src || new URL("js/app.js", document.baseURI))
+    : null;
+const episodeArtworkUrl = (filename) =>
+  APP_ROOT_URL ? new URL(`assets/episodes/${filename}`, APP_ROOT_URL).href : `assets/episodes/${filename}`;
 const EPISODE_VISUALS = Object.freeze({
-  deepfake: "assets/episodes/episode-deepfake.png",
-  rumor: "assets/episodes/episode-rumor.png",
-  chatbot: "assets/episodes/episode-chatbot.png",
-  assignment: "assets/episodes/episode-assignment.png",
-  privacy: "assets/episodes/episode-privacy.png",
+  deepfake: episodeArtworkUrl("episode-deepfake.png"),
+  rumor: episodeArtworkUrl("episode-rumor.png"),
+  chatbot: episodeArtworkUrl("episode-chatbot.png"),
+  assignment: episodeArtworkUrl("episode-assignment.png"),
+  privacy: episodeArtworkUrl("episode-privacy.png"),
 });
 const EPISODE_INTRO_DURATION = 1900;
 let episodeIntroTimer = null;
@@ -1083,6 +1089,7 @@ const state = {
   sceneId: episodes[0].start,
   scores: {},
   history: [],
+  recordEpisodeId: episodes[0].id,
   feedback: "",
   view: "home",
   storyMode: "intro",
@@ -3231,19 +3238,55 @@ function renderChoices(scene) {
   });
 }
 
+function recordEpisodeHistory(episodeId) {
+  if (episodeId === activeEpisode().id && state.history.length) {
+    return state.history;
+  }
+  const savedHistory = state.progress[episodeId]?.history;
+  return Array.isArray(savedHistory) ? savedHistory : [];
+}
+
 function recordHtml() {
-  if (!state.history.length) {
+  const selectedEpisode = episodes.find((episode) => episode.id === state.recordEpisodeId) || activeEpisode();
+  const selectedHistory = recordEpisodeHistory(selectedEpisode.id);
+  const episodePicker = `
+    <div class="record-episode-picker" role="tablist" aria-label="기록을 볼 에피소드 선택">
+      ${episodes
+        .map((episode, index) => {
+          const history = recordEpisodeHistory(episode.id);
+          const selected = episode.id === selectedEpisode.id;
+          return `
+            <button
+              type="button"
+              role="tab"
+              class="record-episode-button${selected ? " is-active" : ""}"
+              data-record-episode="${escapeAttribute(episode.id)}"
+              aria-selected="${selected}"
+            >
+              <span>EP ${index + 1}</span>
+              <strong>${escapeHtml(episode.title)}</strong>
+              <small>${history.length ? `${history.length}개 선택` : "기록 없음"}</small>
+            </button>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+
+  if (!selectedHistory.length) {
     return `
+      ${episodePicker}
       <div class="empty-state">
-        <strong>아직 기록이 없어요</strong>
-        <p>에피소드를 진행하면 선택한 흐름이 여기에 정리됩니다.</p>
+        <strong>${escapeHtml(selectedEpisode.title)} 기록이 아직 없어요</strong>
+        <p>이 에피소드를 진행하면 선택한 흐름이 여기에 정리됩니다.</p>
       </div>
     `;
   }
 
   return `
+    ${episodePicker}
     <div class="timeline-list">
-      ${state.history
+      ${selectedHistory
         .map(
           (item, index) => `
             <article>
@@ -3294,6 +3337,15 @@ function learningHtml(id) {
     </div>
     <p class="guideline-source">출처: ${escapeHtml(ETHICS_SOURCES.primary.publisher)} 「${escapeHtml(ETHICS_SOURCES.primary.title)}」 (${escapeHtml(ETHICS_SOURCES.primary.publishedAt)})</p>
   `;
+}
+
+function bindRecordActions() {
+  document.querySelectorAll("[data-record-episode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.recordEpisodeId = button.dataset.recordEpisode;
+      render();
+    });
+  });
 }
 
 function dashboardPercent(value) {
@@ -3558,10 +3610,11 @@ function render() {
     els.chapterLine.textContent = "Record";
     els.sceneTitle.textContent = "선택 기록";
     els.sceneText.innerHTML = recordHtml();
-    els.quoteText.textContent = state.history.length
-      ? state.history[state.history.length - 1].feedback
+    const recordHistory = recordEpisodeHistory(state.recordEpisodeId);
+    els.quoteText.textContent = recordHistory.length
+      ? recordHistory[recordHistory.length - 1].feedback
       : "선택을 진행하면 판단 이유가 이곳에 쌓입니다.";
-    els.feedbackBox.textContent = state.history.length ? `현재 흐름: ${endingName()}` : "";
+    els.feedbackBox.textContent = "";
   } else if (state.view === "learn") {
     els.chapterLine.textContent = "Learning";
     els.sceneTitle.textContent = "핵심 개념";
@@ -3643,6 +3696,7 @@ function render() {
   renderMeters();
   renderChoices(scene);
   if (isReport) bindReportActions();
+  if (state.view === "record") bindRecordActions();
   if (state.view === "profile") bindProfileActions();
   if (isIntro) scheduleEpisodeIntro();
 }
@@ -3753,6 +3807,9 @@ els.loginForm.addEventListener("submit", (event) => {
 
 document.querySelectorAll(".nav-item").forEach((button) => {
   button.addEventListener("click", () => {
+    if (button.dataset.view === "record") {
+      state.recordEpisodeId = activeEpisode().id;
+    }
     state.view = button.dataset.view === "story" ? "home" : button.dataset.view;
     syncNav();
     render();
