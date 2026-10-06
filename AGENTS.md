@@ -1,17 +1,3 @@
-<!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
-<!-- SPECKIT END -->
+# Workspace Instructions
 
-<!-- GOALJABY START -->
-This repository also includes goaljaby scaffolding from fivetaku/goaljaby:
-
-- Claude Code plugin metadata: `.claude-plugin/plugin.json`
-- Claude command: `commands/goaljaby.md`
-- Goaljaby skill source: `skills/goaljaby/`
-- Codex-readable copy: `.agents/skills/goaljaby/`
-- Reference docs: `docs/goaljaby/`
-
-Use goaljaby when converting a PRD folder into VALIDATION, RECOVERY, PLAN,
-PROGRESS, and goal-command documents before long-running implementation work.
-<!-- GOALJABY END -->
+twAIve 작업은 `2026 졸업프로젝트/`에서 수행하고, 해당 폴더의 `AGENTS.md`와 `PRD/PLAN.md`를 먼저 읽습니다.
