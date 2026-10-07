@@ -2792,7 +2792,12 @@ async function startEpisode(index, options = {}) {
   if (options.loadSaved !== false) {
     const loaded = await loadEpisodeProgress(index);
     if (loaded) {
-      state.introNextMode = state.storyMode || "story";
+      const resumableModes = ["pre", "story", "post", "report"];
+      state.introNextMode = resumableModes.includes(state.storyMode)
+        ? state.storyMode
+        : state.assessments[episodeId]?.pre?.answer
+          ? "story"
+          : "pre";
     } else {
       state.assessments[episodeId] = {
         attemptCount: Math.max(1, Number(previousAssessment.attemptCount || 0)),
