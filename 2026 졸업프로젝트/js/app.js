@@ -1090,6 +1090,7 @@ const state = {
   scores: {},
   history: [],
   recordEpisodeId: episodes[0].id,
+  learningEpisodeId: episodes[0].id,
   feedback: "",
   view: "home",
   storyMode: "intro",
@@ -1159,6 +1160,7 @@ const els = {
   choices: document.getElementById("choices"),
   feedbackBox: document.getElementById("feedbackBox"),
   resetButton: document.getElementById("resetButton"),
+  teacherReturnButton: document.getElementById("teacherReturnButton"),
   signupOnlyItems: document.querySelectorAll(".signup-only"),
   loginOnlyItems: document.querySelectorAll(".login-only"),
   bottomNav: document.querySelector(".bottom-nav"),
@@ -3256,32 +3258,41 @@ function recordEpisodeHistory(episodeId) {
   return Array.isArray(savedHistory) ? savedHistory : [];
 }
 
-function recordHtml() {
-  const selectedEpisode = episodes.find((episode) => episode.id === state.recordEpisodeId) || activeEpisode();
-  const selectedHistory = recordEpisodeHistory(selectedEpisode.id);
-  const episodePicker = `
-    <div class="record-episode-picker" role="tablist" aria-label="기록을 볼 에피소드 선택">
+function episodePickerHtml(selectedEpisodeId, mode) {
+  const isRecord = mode === "record";
+  const dataAttribute = isRecord ? "data-record-episode" : "data-learning-episode";
+  const ariaLabel = isRecord ? "기록을 볼 에피소드 선택" : "핵심 개념을 볼 에피소드 선택";
+  return `
+    <div class="record-episode-picker" role="tablist" aria-label="${ariaLabel}">
       ${episodes
         .map((episode, index) => {
-          const history = recordEpisodeHistory(episode.id);
-          const selected = episode.id === selectedEpisode.id;
+          const selected = episode.id === selectedEpisodeId;
+          const description = isRecord
+            ? `${recordEpisodeHistory(episode.id).length || 0}개 선택`
+            : `${episode.meters.length}개 원칙`;
           return `
             <button
               type="button"
               role="tab"
               class="record-episode-button${selected ? " is-active" : ""}"
-              data-record-episode="${escapeAttribute(episode.id)}"
+              ${dataAttribute}="${escapeAttribute(episode.id)}"
               aria-selected="${selected}"
             >
               <span>EP ${index + 1}</span>
               <strong>${escapeHtml(episode.title)}</strong>
-              <small>${history.length ? `${history.length}개 선택` : "기록 없음"}</small>
+              <small>${isRecord && !recordEpisodeHistory(episode.id).length ? "기록 없음" : description}</small>
             </button>
           `;
         })
         .join("")}
     </div>
   `;
+}
+
+function recordHtml() {
+  const selectedEpisode = episodes.find((episode) => episode.id === state.recordEpisodeId) || activeEpisode();
+  const selectedHistory = recordEpisodeHistory(selectedEpisode.id);
+  const episodePicker = episodePickerHtml(selectedEpisode.id, "record");
 
   if (!selectedHistory.length) {
     return `
@@ -3326,13 +3337,15 @@ function recordHtml() {
 }
 
 function learningHtml(id) {
-  const principleNames = activeEpisode().meters
+  const selectedEpisode = episodes.find((episode) => episode.id === id) || activeEpisode();
+  const principleNames = selectedEpisode.meters
     .map((key) => GUIDELINE_PRINCIPLES[key].name)
     .join(" · ");
   return `
+    ${episodePickerHtml(selectedEpisode.id, "learning")}
     <p class="guideline-source"><strong>적용 원칙</strong> ${escapeHtml(principleNames)}</p>
     <div class="insight-list">
-      ${learningText(id)
+      ${learningText(selectedEpisode.id)
         .split("\n")
         .filter(Boolean)
         .map(
@@ -3353,6 +3366,15 @@ function bindRecordActions() {
   document.querySelectorAll("[data-record-episode]").forEach((button) => {
     button.addEventListener("click", () => {
       state.recordEpisodeId = button.dataset.recordEpisode;
+      render();
+    });
+  });
+}
+
+function bindLearningActions() {
+  document.querySelectorAll("[data-learning-episode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.learningEpisodeId = button.dataset.learningEpisode;
       render();
     });
   });
@@ -3586,6 +3608,7 @@ function render() {
     isLearnerSupport;
   document.body.classList.toggle("is-visual-novel", isVisualNovel);
   document.body.classList.toggle("is-game-home", state.view === "home");
+  document.body.classList.toggle("is-teacher-view", state.view === "teacher");
   els.storyStage.classList.toggle("is-home-stage", state.view === "home");
   els.storyStage.classList.toggle("is-intro-stage", isIntro);
   els.storyStage.classList.toggle("is-pre-stage", isPre);
@@ -3645,7 +3668,7 @@ function render() {
   } else if (state.view === "learn") {
     els.chapterLine.textContent = "Learning";
     els.sceneTitle.textContent = "핵심 개념";
-    els.sceneText.innerHTML = learningHtml(episode.id);
+    els.sceneText.innerHTML = learningHtml(state.learningEpisodeId || episode.id);
     els.quoteText.textContent = "";
     els.feedbackBox.textContent = episode.topic;
   } else if (state.view === "profile") {
@@ -3724,6 +3747,7 @@ function render() {
   renderChoices(scene);
   if (isReport) bindReportActions();
   if (state.view === "record") bindRecordActions();
+  if (state.view === "learn") bindLearningActions();
   if (state.view === "profile") bindProfileActions();
   if (isIntro) {
     document.getElementById("episodeIntroSkip")?.addEventListener("click", (event) => {
@@ -3844,10 +3868,19 @@ document.querySelectorAll(".nav-item").forEach((button) => {
     if (button.dataset.view === "record") {
       state.recordEpisodeId = activeEpisode().id;
     }
+    if (button.dataset.view === "learn") {
+      state.learningEpisodeId = activeEpisode().id;
+    }
     state.view = button.dataset.view === "story" ? "home" : button.dataset.view;
     syncNav();
     render();
   });
+});
+
+els.teacherReturnButton.addEventListener("click", () => {
+  state.view = "profile";
+  syncNav();
+  render();
 });
 
 resetScores(episodes[0]);
