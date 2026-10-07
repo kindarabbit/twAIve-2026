@@ -5944,7 +5944,7 @@ body.is-visual-novel .story-stage.is-support-stage .guideline-source {
   display: block;
   width: fit-content;
   max-width: 100%;
-  min-height: 0;
+  height: max-content;
   justify-self: start;
   margin-bottom: 8px;
   padding: 5px 8px;
