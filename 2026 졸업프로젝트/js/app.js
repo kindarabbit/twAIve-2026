@@ -1665,8 +1665,9 @@ function clearEpisodeIntroTimer() {
 }
 
 async function finishEpisodeIntro() {
-  if (state.view !== "story" || state.storyMode !== "intro") return;
+  if (!els.storyStage.classList.contains("is-intro-stage")) return;
   clearEpisodeIntroTimer();
+  state.view = "story";
   state.storyMode = state.introNextMode || "pre";
   if (state.storyMode === "pre") {
     state.feedback = "이야기 전에 지금 생각을 먼저 골라주세요.";

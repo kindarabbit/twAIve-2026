@@ -5652,6 +5652,7 @@ body.is-visual-novel .story-stage.is-report-detail .scene-text {
 }
 
 .report-detail-view {
+  height: max-content;
   min-height: 100%;
   background: transparent;
 }
