@@ -1161,7 +1161,6 @@ const els = {
   resetButton: document.getElementById("resetButton"),
   signupOnlyItems: document.querySelectorAll(".signup-only"),
   loginOnlyItems: document.querySelectorAll(".login-only"),
-  teacherNavButton: document.querySelector(".teacher-nav"),
   bottomNav: document.querySelector(".bottom-nav"),
 };
 
@@ -1360,9 +1359,8 @@ async function loadProfile() {
   return data;
 }
 
-function setTeacherNavigation(visible) {
-  if (els.teacherNavButton) els.teacherNavButton.hidden = !visible;
-  els.bottomNav?.classList.toggle("has-teacher", visible);
+function setTeacherNavigation() {
+  els.bottomNav?.classList.remove("has-teacher");
 }
 
 async function loadTeacherDashboard(options = {}) {
@@ -1689,7 +1687,7 @@ function renderEpisodeIntro() {
   els.sceneTitle.textContent = activeEpisode().title;
   els.sceneText.innerHTML = `
     <p class="episode-intro-summary">${escapeHtml(activeEpisode().summary)}</p>
-    <span class="episode-intro-skip">화면을 누르면 바로 시작해요</span>
+    <button class="episode-intro-skip" id="episodeIntroSkip" type="button">바로 시작하기</button>
   `;
   els.quoteText.textContent = "";
   els.feedbackBox.textContent = "";
@@ -2077,7 +2075,12 @@ function aiCoachHtml() {
             type="submit"
             aria-label="AI 설명 받기"
             title="AI 설명 받기"
-          ></button>
+          >
+            <svg class="ai-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+          </button>
         </div>
         <div class="ai-question-suggestions" aria-labelledby="aiSuggestionLabel">
           <span id="aiSuggestionLabel">추천 질문</span>
@@ -2297,6 +2300,7 @@ function bindReportActions() {
       url.searchParams.set("episode", activeEpisode().id);
       window.history.replaceState({}, "", url);
       render();
+      els.sceneText.scrollTop = 0;
     });
   });
 }
@@ -3524,19 +3528,36 @@ function profileHtml(profile) {
       </button>
     </form>
     ${learnerAnalysisHtml(overallLearningAnalysis(), { detailed: true })}
+    ${
+      state.teacherDashboard.authorized
+        ? `<section class="profile-teacher-entry" aria-label="교수자 기능">
+            <div>
+              <span>교수자 전용</span>
+              <strong>익명 학습 분석 대시보드</strong>
+            </div>
+            <button id="openTeacherDashboard" type="button">대시보드 열기 <span aria-hidden="true">→</span></button>
+          </section>`
+        : ""
+    }
   `;
 }
 
 function bindProfileActions() {
   const form = document.getElementById("profileForm");
-  if (!form) return;
+  if (form) {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      updateProfileSettings(
+        form.querySelector("#profileNameInput").value,
+        form.querySelector("#analyticsConsentInput").checked,
+      );
+    });
+  }
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    updateProfileSettings(
-      form.querySelector("#profileNameInput").value,
-      form.querySelector("#analyticsConsentInput").checked,
-    );
+  document.getElementById("openTeacherDashboard")?.addEventListener("click", () => {
+    state.view = "teacher";
+    syncNav();
+    render();
   });
 }
 
@@ -3698,13 +3719,20 @@ function render() {
   if (isReport) bindReportActions();
   if (state.view === "record") bindRecordActions();
   if (state.view === "profile") bindProfileActions();
-  if (isIntro) scheduleEpisodeIntro();
+  if (isIntro) {
+    document.getElementById("episodeIntroSkip")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      void finishEpisodeIntro();
+    });
+    scheduleEpisodeIntro();
+  }
 }
 
 function syncNav() {
   document.querySelectorAll(".nav-item").forEach((item) => {
     const isStorySection = item.dataset.view === "story" && ["home", "story"].includes(state.view);
-    item.classList.toggle("is-active", isStorySection || item.dataset.view === state.view);
+    const isProfileSection = item.dataset.view === "profile" && ["profile", "teacher"].includes(state.view);
+    item.classList.toggle("is-active", isStorySection || isProfileSection || item.dataset.view === state.view);
   });
 }
 
